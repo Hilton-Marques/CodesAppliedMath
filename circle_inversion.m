@@ -1,0 +1,21 @@
+clc;
+clear;
+close all;
+hold on
+axis([-2,2,-2,2]);
+%set(gca,'visible','off');
+set(gcf,'color','white');
+p = [1,1];
+p = [0.4,0.4];
+norm_p = norm(p);
+t = linspace(0,2*pi,30);
+circle = [cos(t);sin(t)];
+inv_p = (1/dot(p,p))*p;
+plot(circle(1,:),circle(2,:),'color','blue');
+plot(0,0,'x');
+plot(p(1),p(2),'o','MarkerFaceColor','green');
+plot(inv_p(1),inv_p(2),'o','MarkerFaceColor','red');
+x = linspace(-2,2,4);
+y  = p(1)*x - p(2);
+y  = (1/p(2))*( 1 - p(1)*x);
+plot(x,y,'color','black');

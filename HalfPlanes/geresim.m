@@ -2,6 +2,80 @@ clc;
 clear;
 close all;
 
+conec = [0, 3, 2; 0, 1, 3; 4, 1, 0; 4, 5, 1; 5, 3, 1; 5, 7, 3;...
+    4, 2, 6; 4, 0, 2; 7, 4, 6; 7, 5, 4; 6, 3, 7; 6, 2, 3];
+
+case1 = [0, 0, 10;0, 0, 10;0, 0, 10;0, 0, 10;0, 0, 0;10, 0, 0;0, 10, 0;10, 10, 0];
+case2 = [0, 0, 10;10, 0, 10;0, 10, 10;10, 10, 10;0, 0, 0;10, 0, 10;0, 10, 0;10, 10, 0];
+case3 = [0, 0, 10;10, 0, 10;0, 10, 10;10, 10, 10;0, 0, 0;10, 0, 10;0, 10, 10;10, 10, 0];
+case4 = [0, 0, 0;10, 0, 10;0, 10, 10;10, 10, 0;0, 0, 0;10, 0, 0;0, 10, 0;10, 10, 0];
+case5 = [0, 0, 0;0, 0, 0;0, 10, 10;10, 10, 0;0, 0, 0;0, 0, 0;0, 10, 0;10, 10, 0];
+pts = {case1,case2,case3,case4,case5};
+out = getVectorizedPoints(conec+1,case1);
+
+A = [-0.00000000 , 1.00000000   , -0.00000000 , 0  ;
+0.00000000  , -1.00000000  , 0.00000000  , 0 ;
+0.707106829 , 0.00000000   , 0.707106829 , -7.07106829 ;
+1.00000000  , 0.00000000   , 0.00000000  , 0 ;
+-0.00000000 , 0.707106829  , 0.707106829 , 0 ;
+0.00000000  , -0.707106829 , -0.707106829  , 7.07106829 ];
+figure
+hold on
+view(30,30);
+axis ([-1,11,-1,11,-1,11]);
+case1_scale = transpose(0.8*eye(3) * transpose(case1 + [0.1,0.1,0.1]));
+plotSolid(case1_scale,conec + 1,'cyan','blue');
+plotPlane(A)
+keyboard
+half = BuildHalfPlanes(conec+1,case1);
+% for i = 1:5
+%     pt_i = pts{i};
+%     figure
+%     hold on
+%     view(30,30);    
+%     plotSolid(pt_i,conec + ones(12,3),'cyan','blue');
+%     title(strcat('caseDegenerated',num2str(i)));
+%     hold off
+% end
+for i = 1:5
+    pt_i = pts{i};
+    
+    pt_other = transform(pt_i);
+    if (i == 2 || i == 3)
+    pt_other = trans(pt_i);
+    end
+    figure
+    hold on
+    view(30,30);    
+    plotSolid(pt_i,conec + ones(12,3),'cyan','blue');
+    plotSolid(pt_other,conec + ones(12,3),'red','yellow');
+    title(strcat('caseDegenerated',num2str(i)));
+    hold off
+end
+
+keyboard
+pt_other = transform(pt,1);
+
+figure
+hold on
+view(30,30);
+
+plotSolid(pt,conec + ones(12,3),'cyan');
+plotSolid(pt_other,conec + ones(12,3),'red');
+hold off
+
+caso2 = [ 0, 0, 8 ; 10, 0, 10; 0, 10, 10;10, 10, 8;0, 0, 0;10, 0, 0;0, 10, 0;10, 10, 0];
+pt_other = transform(caso2,1);
+
+
+figure
+hold on
+view(30,30);
+
+plotSolid(caso2,conec + ones(12,3),'cyan');
+plotSolid(pt_other,conec + ones(12,3),'red');
+hold off
+
 fecho_pt_A = [42.8147392,	-94.2119827,-2.32802582	;...
 44.5470543,	-93.2124481,-2.32802582	;...
 41.8152008,	-92.4796677,-2.32802582	;...
@@ -183,23 +257,23 @@ hold off
 
 function drawPlan(n,d,color,A,xo)
 if nargin == 1
-    A = 2000;
+    A = 20000;
     xo = [0;0;0];
     color = [1,0,0];
     d = 0;
 elseif nargin == 2
     xo = [0;0;0];
     color = [1,0,0];
-    A = 2000;
+    A = 20000;
 elseif nargin == 3
     xo = [0;0;0];
-    A = 2000;
+    A = 20000;
 end
 [x,y] = findTriedro(n);
-xp1 = xo + A*x - n*d;
-yp1 = xo + A*y - n*d;
-xp2 = xo - A*x - n*d;
-yp2 = xo - A*y - n*d;
+xp1 = xo + A*x - n*d ;
+yp1 = xo + A*y - n*d ;
+xp2 = xo - A*x - n*d ;
+yp2 = xo - A*y - n*d ;
 h1 = fill3([xp1(1),yp1(1),xp2(1),yp2(1)],...
     [xp1(2),yp1(2),xp2(2),yp2(2)],...
     [xp1(3),yp1(3),xp2(3),yp2(3)],color);
@@ -229,4 +303,83 @@ bb(6,:) = [pMin(1),pMax(2),pMax(3)];
 bb(7,:) = [pMin(1),pMin(2),pMax(3)];
 bb(8,:) = [pMax(1),pMin(2),pMax(3)];
 
+end
+function plotSolid(pt,conec,color,color_point)
+
+%plot3(pt(:,1),pt(:,2),pt(:,3),'o','MarkerSize',10,'MarkerFaceColor',color_point);
+%trisurf(conec,pt(:,1),pt(:,2),pt(:,3),'FaceAlpha',0.5,'FaceColor',color);
+for i = 1:12
+    id = conec(i,:);
+    trisurf(id,pt(:,1),pt(:,2),pt(:,3),'FaceAlpha',0.5,'FaceColor',color);
+end
+end
+function pt_final = transform(pt)
+teta = 1;
+centroide = sum(pt)/size(pt,1);
+T = [cos(teta),-sin(teta),0;sin(teta),cos(teta),0;0,0,1];
+pt_trans = pt - centroide;
+pt_rot = transpose(T * pt_trans');
+pt_final = pt_rot + centroide;
+id = 3;
+r = pt(id,:) - pt_final(id,:);
+pt_final = pt_final + r;
+end
+function pt_final = trans(pt)
+id_i = 1;
+id_j = 3;
+trans = pt(id_i,:) - pt(id_j,:);
+pt_final = pt + trans;
+end
+function planes = BuildHalfPlanes(conec,pts)
+planes = zeros(6,4);
+for i = 1:2:11
+    id = conec(i,:);
+    pts_i = pts(id,:);
+    [n_i,d_i] = getPlane(pts_i);
+    id = conec(i+1,:);
+    pts_i = pts(id,:);
+    [n_j,d_j] = getPlane(pts_i);
+    norm_ni = norm(n_i);
+    norm_nj = norm(n_j);
+    if (norm(n_i) == 0 || isnan(norm_ni))
+        if (norm(n_j) == 0 || isnan(norm_nj))
+            continue;
+        else
+            planes((i+1)/2,:) = [n_j,d_j];
+        end
+    else
+        if (norm(n_j) == 0 || isnan(norm_nj))
+            planes((i+1)/2,:) = [n_i,d_i];
+        else
+            n_medio = 0.5 * (n_i + n_j);
+            d_medio = 0.5 * (d_i + d_j);
+            planes((i+1)/2,:) = [n_medio,d_medio];
+        end
+    end
+end
+
+end
+function [n,d] = getPlane(pts_i)
+    u = pts_i(1,:) - pts_i(2,:);
+    v = pts_i(1,:) - pts_i(3,:);
+    n = cross(u,v)/norm(cross(u,v));
+    d = dot(n,pts_i(1,:));
+end
+function out = getVectorizedPoints(conec,pts_i)
+out = [];
+for i = 1:2:12
+    ids = conec(i:i+1,:);
+    ids = unique(ids(:));
+    pt = pts_i(ids,:);
+    pt = pt';
+    pt = pt(:);
+    out(end+1,1:12) = pt;
+end
+end
+function plotPlane(A)
+for i = 1:6
+    n = A(i,1:3);
+    d = A(i,4);
+    drawPlan(n',d,'r');
+end
 end
