@@ -2,32 +2,120 @@ clc;
 clear;
 close all;
 
-conec = [0, 3, 2; 0, 1, 3; 4, 1, 0; 4, 5, 1; 5, 3, 1; 5, 7, 3;...
-    4, 2, 6; 4, 0, 2; 7, 4, 6; 7, 5, 4; 6, 3, 7; 6, 2, 3];
-
+conec = [0, 3, 2; 0, 1, 3; 
+         4, 1, 0; 4, 5, 1; 
+         5, 3, 1; 5, 7, 3;...
+         4, 2, 6; 4, 0, 2;
+         7, 4, 6; 7, 5, 4;
+         6, 3, 7; 6, 2, 3];
+conec_fitting = [0,1,3,2;...
+          4,6,7,5;...
+          5,7,3,1;...
+          4,0,2,6;...
+          4,5,1,0;...
+          2,3,7,6];
+      
+case0 = [0, 0, 10; 10, 0, 10; 0, 10, 10; 10, 10, 10;0, 0, 0;10, 0, 0;0, 10, 0;10, 10, 0];
 case1 = [0, 0, 10;0, 0, 10;0, 0, 10;0, 0, 10;0, 0, 0;10, 0, 0;0, 10, 0;10, 10, 0];
 case2 = [0, 0, 10;10, 0, 10;0, 10, 10;10, 10, 10;0, 0, 0;10, 0, 10;0, 10, 0;10, 10, 0];
 case3 = [0, 0, 10;10, 0, 10;0, 10, 10;10, 10, 10;0, 0, 0;10, 0, 10;0, 10, 10;10, 10, 0];
 case4 = [0, 0, 0;10, 0, 10;0, 10, 10;10, 10, 0;0, 0, 0;10, 0, 0;0, 10, 0;10, 10, 0];
 case5 = [0, 0, 0;0, 0, 0;0, 10, 10;10, 10, 0;0, 0, 0;0, 0, 0;0, 10, 0;10, 10, 0];
-pts = {case1,case2,case3,case4,case5};
-out = getVectorizedPoints(conec+1,case1);
+case_bruno =  [1276.25464 -2885.52686 -3043.70361;...
+     1376.55835 -2885.95142 -3046.62451;...
+     1279.13794 -2785.50562 -3049.44556;...
+     1379.58325 -2786.01099 -3058.30469;...
+     1276.25464 -2885.52686 -3043.70361;...
+     1376.55835 -2885.95142 -3046.62451;...
+     1279.13794 -2785.50562 -3049.44556;...
+     1379.58325 -2786.01099 -3058.30469];
+ pts = {case1,case2,case3,case4,case5};
 
-A = [-0.00000000 , 1.00000000   , -0.00000000 , 0  ;
-0.00000000  , -1.00000000  , 0.00000000  , 0 ;
-0.707106829 , 0.00000000   , 0.707106829 , -7.07106829 ;
-1.00000000  , 0.00000000   , 0.00000000  , 0 ;
--0.00000000 , 0.707106829  , 0.707106829 , 0 ;
-0.00000000  , -0.707106829 , -0.707106829  , 7.07106829 ];
+ for i = 1:5
+    out = getVectorizedPoints(conec_fitting,pts{i});
+ end
+
+
+A = [-0.00000000 , -0.00000000 , 1.00000000, -10.0000000;...
+0.00000000  , 0.00000000  , -1.00000000 , 0;...
+0.707106829 , 0.00000000  , 0.707106829, -7.07106829;...
+-1.00000000 , 0.00000000  , 0.00000000 ,  0;...
+0.00000000  , -1.00000000 , 0.00000000 , 0;...
+0.00000000  , 0.707106829 , 0.707106829, -7.07106829];
+
+B = [0.00000000  , 0.00000000   , 1.00000000   , -10;...
+0.367001027 , -0.367001027 , -0.854763448 , 2.13690853;...
+1.00000000  , 0.00000000   , 0.00000000   , -10.0000000;...
+-1.00000000 , 0.00000000   , 0.00000000   , 0;...
+0.00000000  , -1.00000000  , 0.00000000   , 0;...
+0.00000000  , 1.00000000   , 0.00000000   , -10.0000000];
+
+C = [0.00000000  , 0.00000000  , 1.00000000 , -10.0000000;...
+0.00000000  , 0.00000000  , -1.00000000, 5.00000000;...
+1.00000000  , 0.00000000  , 0.00000000 , -10.0000000;...
+-1.00000000 , 0.00000000  , 0.00000000 , 0;...
+0.00000000  , -1.00000000 , 0.00000000 , 0;...
+0.00000000  , 1.00000000  , 0.00000000 , -10.0000000];
+
+D = [0.00000000  0.00000000  , 1.00000000  , -5.0;...
+0.00000000  0.00000000  , -1.00000000 , 0;...
+1.00000000  0.00000000  , 0.00000000  , -10;...
+-1.00000000 0.00000000  , 0.00000000  , 0;...
+0.00000000  -1.00000000 , 0.00000000  , 0;...
+0.00000000  1.00000000  , 0.00000000  , -10];
+
+E = [0.577350259 , -0.577350259 , 0.577350259, 0;...
+0.00000000  , 0.00000000   , -1.00000000, 0;...
+-1.00000000  , -0.00000000  , -0.00000000, 0;...
+-1.00000000  , -0.00000000  , -0.00000000, 0;...
+-0.00000000 , -1.00000000  , -0.00000000, 0;...
+0.00000000  , 1.00000000   , 0.00000000 , -10];
+
+normals = {A,B,C,D,E};
+
+
+for i = 1:5
+    if i == 5
+        a = 1;
+    end
+    pt_i = pts{i};
+
+    figure
+    hold on
+    view(-172,33);    
+    %axis ([-1,11,-1,11,-1,11]);
+    plotSolid(pt_i,conec + ones(12,3),'cyan','blue');
+    [k2,dualPoints] = findInterior(normals{i},[12,0,0]);
+    %plotPlane(normals{i});
+    plot3(dualPoints(:,1),dualPoints(:,2),dualPoints(:,3),'o','MarkerFaceColor','yellow');
+    trisurf(k2,dualPoints(:,1),dualPoints(:,2),dualPoints(:,3),'FaceColor','red');
+    name = strcat('caseDegenerated',num2str(i));
+    title(name);
+    exportgraphics(gca,strcat(name,'.png'),'Resolution',1000);
+
+    hold off
+end
+keyboard;
+
 figure
 hold on
-view(30,30);
+view(86,44);
 axis ([-1,11,-1,11,-1,11]);
-case1_scale = transpose(0.8*eye(3) * transpose(case1 + [0.1,0.1,0.1]));
-plotSolid(case1_scale,conec + 1,'cyan','blue');
+plotSolid(case1,conec + 1,'cyan','blue');
+findInterior(A);
+keyboard;
+figure
+hold on
+view(86,44);
+axis ([-1,11,-1,11,-1,11]);
+case1_scale = transpose(0.95*eye(3) * transpose(case1 + [0.1,0.1,0.1]));
+plotSolid(case1,conec + 1,'cyan','blue');
 plotPlane(A)
-keyboard
-half = BuildHalfPlanes(conec+1,case1);
+%exportgraphics(gca,'halfplanes.png','Resolution',1000);
+hold off
+
+
+keyboard;
 % for i = 1:5
 %     pt_i = pts{i};
 %     figure
@@ -49,7 +137,10 @@ for i = 1:5
     view(30,30);    
     plotSolid(pt_i,conec + ones(12,3),'cyan','blue');
     plotSolid(pt_other,conec + ones(12,3),'red','yellow');
-    title(strcat('caseDegenerated',num2str(i)));
+    name = strcat('caseDegenerated',num2str(i));
+    title(name);
+    exportgraphics(gca,strcat(name,'.png'),'Resolution',1000);
+
     hold off
 end
 
@@ -277,7 +368,7 @@ yp2 = xo - A*y - n*d ;
 h1 = fill3([xp1(1),yp1(1),xp2(1),yp2(1)],...
     [xp1(2),yp1(2),xp2(2),yp2(2)],...
     [xp1(3),yp1(3),xp2(3),yp2(3)],color);
-set(h1, 'facealpha',0.5);
+set(h1, 'facealpha',0.6);
 end
 function [x,y] = findTriedro(z)
 z = z/norm(z);
@@ -306,12 +397,12 @@ bb(8,:) = [pMax(1),pMin(2),pMax(3)];
 end
 function plotSolid(pt,conec,color,color_point)
 
-%plot3(pt(:,1),pt(:,2),pt(:,3),'o','MarkerSize',10,'MarkerFaceColor',color_point);
-%trisurf(conec,pt(:,1),pt(:,2),pt(:,3),'FaceAlpha',0.5,'FaceColor',color);
-for i = 1:12
-    id = conec(i,:);
-    trisurf(id,pt(:,1),pt(:,2),pt(:,3),'FaceAlpha',0.5,'FaceColor',color);
-end
+plot3(pt(:,1),pt(:,2),pt(:,3),'o','MarkerSize',10,'MarkerFaceColor',color_point);
+trisurf(conec,pt(:,1),pt(:,2),pt(:,3),'FaceAlpha',0.5,'FaceColor',color);
+% for i = 1:12
+%     id = conec(i,:);
+%     trisurf(id,pt(:,1),pt(:,2),pt(:,3),'FaceAlpha',0.5,'FaceColor',color);
+% end
 end
 function pt_final = transform(pt)
 teta = 1;
@@ -367,13 +458,11 @@ function [n,d] = getPlane(pts_i)
 end
 function out = getVectorizedPoints(conec,pts_i)
 out = [];
-for i = 1:2:12
-    ids = conec(i:i+1,:);
-    ids = unique(ids(:));
-    pt = pts_i(ids,:);
-    pt = pt';
-    pt = pt(:);
-    out(end+1,1:12) = pt;
+pts_i_trans = pts_i';
+for i = 1:6
+    id = conec(i,:) + 1;   
+    v = pts_i_trans(:,id);
+    out(end+1,1:12) = v(:);
 end
 end
 function plotPlane(A)
@@ -382,4 +471,54 @@ for i = 1:6
     d = A(i,4);
     drawPlan(n',d,'r');
 end
+end
+
+function [k2,dualPoints] = findInterior(M,trans)
+%A = A(1:6,:);
+%b = b(1:6,:);
+A = M(:,1:3);
+A(:,4) = 1.0;
+b = -M(:,4);
+n = size(A,2);
+m = size(A,1);
+c = zeros(n,1);
+c(end) = -1;
+tic
+center = linprog(c,A,b);
+r = center(4,1);
+center = center(1:3)';
+% center = [1,2,3];
+coord_dual = [];
+for i = 1:m
+    n = A(i,1:3);
+    d = b(i);
+    new_d = d - dot(center,n);
+    if (new_d == 0)
+        continue;
+    end
+    coord_dual(end+1,1:3) = ( 1/new_d ) * n;
+end
+[k1,av1] = convhull(coord_dual);
+dualPoints = zeros(size(k1,1),3);
+count = 1;
+for i = 1:size(k1,1)
+    inc = k1(i,:);
+    p1 = coord_dual(inc(1),:);
+    p2 = coord_dual(inc(2),:);
+    p3 = coord_dual(inc(3),:);
+    normal = cross(p2 - p1, p3 - p1);
+    normal = normal / norm(normal);
+    d = dot(normal,p1);
+    if (d == 0)
+        continue;
+    end
+    dualPoints(count,:) = (1/d)* normal + center + trans;
+    count = count + 1;
+end
+[k2,av1] = convhull(dualPoints);
+% figure
+% view(30,30);
+% hold on
+%trisurf(k2,dualPoints(:,1),dualPoints(:,2),dualPoints(:,3),'FaceColor','red');
+%hold off;
 end

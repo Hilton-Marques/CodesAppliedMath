@@ -101,6 +101,15 @@ im{count} = frame2im(frame);
 % 433.45388793945312];
 
 [A,b] = getAb(solid1,solid2);
+M = [-0.00000000 , 1.00000000   , -0.00000000 , 0  ;
+0.00000000  , -1.00000000  , 0.00000000  , 0 ;
+0.707106829 , 0.00000000   , 0.707106829 , -7.07106829 ;
+1.00000000  , 0.00000000   , 0.00000000  , 0 ;
+-0.00000000 , 0.707106829  , 0.707106829 , 0 ;
+0.00000000  , -0.707106829 , -0.707106829  , 7.07106829 ];
+A = M(:,1:3);
+A(:,4) = 1.0;
+b = -M(:,4);
 %A = A(1:6,:);
 %b = b(1:6,:);
 n = size(A,2);
@@ -118,7 +127,7 @@ view(30,30);
 
 plot3(center(1),center(2),center(3),'o','MarkerSize',5,'MarkerFaceColor','r');
 
-for i = 1:12
+for i = 1:m
     n = A(i,1:3);
     d = b(i);
     
@@ -196,8 +205,8 @@ for i = 1 : m
 end
 tic
 %[x,points,cost,basis] = solveLP(newA,b,newf,[n-12+1:n],b);
-[x,points,cost,basis] = solveLP(newAA,b,newff,basis,b);
-[xOther,fval] = linprog(newff,-eye(n,n),zeros(n,1),newAA,b);
+%[x,points,cost,basis] = solveLP(newAA,b,newff,basis,b);
+%[xOther,fval] = linprog(newff,-eye(n,n),zeros(n,1),newAA,b);
 toc
 %basis = sort(basis);
 init = x(basis);
