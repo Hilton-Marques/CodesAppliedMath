@@ -2,6 +2,7 @@ clc;
 clear;
 close all;
 
+%% Halfplanes
 conec = [0, 3, 2; 0, 1, 3; 
          4, 1, 0; 4, 5, 1; 
          5, 3, 1; 5, 7, 3;...
@@ -21,6 +22,10 @@ case2 = [0, 0, 10;10, 0, 10;0, 10, 10;10, 10, 10;0, 0, 0;10, 0, 10;0, 10, 0;10, 
 case3 = [0, 0, 10;10, 0, 10;0, 10, 10;10, 10, 10;0, 0, 0;10, 0, 10;0, 10, 10;10, 10, 0];
 case4 = [0, 0, 0;10, 0, 10;0, 10, 10;10, 10, 0;0, 0, 0;10, 0, 0;0, 10, 0;10, 10, 0];
 case5 = [0, 0, 0;0, 0, 0;0, 10, 10;10, 10, 0;0, 0, 0;0, 0, 0;0, 10, 0;10, 10, 0];
+
+
+
+
 case_bruno =  [1276.25464 -2885.52686 -3043.70361;...
      1376.55835 -2885.95142 -3046.62451;...
      1279.13794 -2785.50562 -3049.44556;...
@@ -30,7 +35,19 @@ case_bruno =  [1276.25464 -2885.52686 -3043.70361;...
      1279.13794 -2785.50562 -3049.44556;...
      1379.58325 -2786.01099 -3058.30469];
  pts = {case1,case2,case3,case4,case5};
-
+ real_volumes = [];
+ for i = 1:5     
+     figure
+     hold on
+     view(-172,33);
+     volume = calculateVolume(pts{i},conec+1,i);
+     
+     real_volumes(end + 1) = volume;
+     name = strcat('caseDegeneratedVolume',num2str(i));
+     title(name);
+     exportgraphics(gca,strcat(name,'.png'),'Resolution',1000);
+     hold off
+ end
  for i = 1:5
     out = getVectorizedPoints(conec_fitting,pts{i});
  end
@@ -73,7 +90,7 @@ E = [0.577350259 , -0.577350259 , 0.577350259, 0;...
 
 normals = {A,B,C,D,E};
 
-
+volumes = [];
 for i = 1:5
     if i == 5
         a = 1;
@@ -85,7 +102,8 @@ for i = 1:5
     view(-172,33);    
     %axis ([-1,11,-1,11,-1,11]);
     plotSolid(pt_i,conec + ones(12,3),'cyan','blue');
-    [k2,dualPoints] = findInterior(normals{i},[12,0,0]);
+    [k2,dualPoints,volume] = findInterior(normals{i},[12,0,0]);
+    volumes(end+1) = volume;
     %plotPlane(normals{i});
     plot3(dualPoints(:,1),dualPoints(:,2),dualPoints(:,3),'o','MarkerFaceColor','yellow');
     trisurf(k2,dualPoints(:,1),dualPoints(:,2),dualPoints(:,3),'FaceColor','red');
@@ -95,6 +113,7 @@ for i = 1:5
 
     hold off
 end
+
 keyboard;
 
 figure
@@ -397,7 +416,11 @@ bb(8,:) = [pMax(1),pMin(2),pMax(3)];
 end
 function plotSolid(pt,conec,color,color_point)
 
-plot3(pt(:,1),pt(:,2),pt(:,3),'o','MarkerSize',10,'MarkerFaceColor',color_point);
+for i = 1:size(pt,1)
+pt_i = pt(i,:);
+plot3(pt_i(1),pt_i(2),pt_i(3),'o','MarkerSize',10,'MarkerFaceColor',color_point);
+text(pt_i(1),pt_i(2),pt_i(3),num2str(i), 'VerticalAlignment','top','HorizontalAlignment','left');
+end
 trisurf(conec,pt(:,1),pt(:,2),pt(:,3),'FaceAlpha',0.5,'FaceColor',color);
 % for i = 1:12
 %     id = conec(i,:);
@@ -473,7 +496,7 @@ for i = 1:6
 end
 end
 
-function [k2,dualPoints] = findInterior(M,trans)
+function [k2,dualPoints,vol] = findInterior(M,trans)
 %A = A(1:6,:);
 %b = b(1:6,:);
 A = M(:,1:3);
@@ -515,10 +538,72 @@ for i = 1:size(k1,1)
     dualPoints(count,:) = (1/d)* normal + center + trans;
     count = count + 1;
 end
-[k2,av1] = convhull(dualPoints);
+[k2,vol] = convhull(dualPoints);
 % figure
 % view(30,30);
 % hold on
 %trisurf(k2,dualPoints(:,1),dualPoints(:,2),dualPoints(:,3),'FaceColor','red');
 %hold off;
+end
+function volume = calculateVolume(cell,conec,id)
+n = size(conec,1);
+triangles = [];
+for i = 1:n
+    ids = conec(i,:);
+    pts = cell(ids,:);
+    u = pts(1,:) - pts(2,:);
+    v = pts(1,:) - pts(3,:);
+    area = 0.5*norm(cross(u,v));
+    if area > 0
+        triangles(end+1,1:3) = ids;
+    end
+end
+if id == 4
+    %could be concave
+    volume = 0;    
+    tetra_1 = triangles([2,3,4,7],:);
+    volume = volume + getVol(cell,tetra_1);
+    tetra_2 = triangles([1,5,6,8],:);
+    volume = volume + getVol(cell,tetra_2);
+    return;
+end
+
+volume = getVol(cell,triangles);
+
+end
+function volume = getVol(cell,triangles)
+n_tri = size(triangles,1);
+centroide = zeros(1,3);
+for i = 1:n_tri
+    ids = triangles(i,1:3);
+    pts = cell(ids,:);
+    c = (pts(1,:) + pts(2,:) + pts(3,:))/3;
+    centroide = centroide + c;
+end
+centroide = centroide / n_tri;
+% calculate volume
+volume = 0;
+for i = 1:n_tri
+    ids = triangles(i,1:3);
+    pts = cell(ids,:);
+    u = pts(1,:) - pts(2,:);
+    v = pts(1,:) - pts(3,:);
+    n = cross(u,v);
+    norm_n = norm(n);
+    n = n / norm_n;
+    area = norm_n;
+    d = centroide -  pts(1,:);
+    h = abs(dot(n,d));
+    volume = volume + h*area*(1/6);
+    showTetra([pts;centroide]);
+end
+end
+function showTetra(pts)
+tri1 = [1,2,3];
+tri2 = [1,2,4];
+tri3 = [2,3,4];
+tri4 = [1,3,4];
+plot3(pts(4,1),pts(4,2),pts(4,3),'o','MarkerSize', 20, 'MarkerFaceColor', 'red');
+triangles = [tri1;tri2;tri3;tri4];
+trisurf(triangles,pts(:,1),pts(:,2),pts(:,3),'FaceAlpha',0.5);
 end
