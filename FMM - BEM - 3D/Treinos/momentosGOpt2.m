@@ -3,7 +3,7 @@ close all
 clc
 
 ng = 10;
-n = 6;
+n = 2;
 a1 = 1;
 an = 2*(n)+1;
 size = (a1 + an)*(n+1)/2;
@@ -51,7 +51,7 @@ for n = 0:n
     for m = -n:n
         for nc = 0:n
             for mc = -nc:nc
-                id = indexNM(n-nc,m-mc);
+                id = indexNM(nc,mc)
                 if (id > 0)
                     MT(count) = MT(count) + ...
                         RR(indexNM(nc,mc))*...

@@ -1,0 +1,15 @@
+(1)Verlet algorithm and (2)Octree method are applied.
+
+You can run the scripts to see the examples.
+
+You can also use your own case. 
+Your own case should be a struct array whose elements represent bodies¡¯ initial states. Each element (body) contains 4 fields: mass (a positive scalar), position (a 1-by-3 vector, relative to the origin point), velocity (a 1-by-3 vector), and acceleration (a 1-by-3 vector). 
+You can check the examples in these scripts and in the folder TestCase.
+
+Visualization-related settings are in the class Viewer. You may modify the code to see what happens :)
+(a) marker size, (b) axis limit, (c)choice of whether fixed axis is applied, (d) choice of whether minor grid is displayed, (e) choice of whether stars¡¯ trails are displayed, and (f) choice of whether star 1 is highlighted.
+
+Note that this program cannot handle collisions - they just "pass through" each other (not true in reality). The script Script2starCollision shows what would happen in this situation.
+Just a prototype, may has some bugs.
+
+Ctrl+C to terminate the program.

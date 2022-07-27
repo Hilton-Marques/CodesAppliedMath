@@ -6,7 +6,7 @@ clc;
 N1 = [1;1;1];
 N1 = N1/norm(N1);
 %given another plane
-N2 = [0;0;1];
+N2 = [1;-2;3];
 N2 = N2/norm(N2);
 % given a Figure
 O = [2,3,1; -2,3,1 ; -2,1,4; 2,1,4;];
@@ -18,7 +18,11 @@ O = rec3D(1,1,1);
 O = [O;ones(1,size(O,2))];
 
 % central orthogonal Transformation 
-%T = (eye(3) - (1/dot(N1,N2))*N2*N1');
+T = (eye(3) - (1/dot(N1,N2))*N2*N1');
+T1 = (eye(3) - (1/dot(N1,N2))*N2*N1');
+T2 = (eye(3) - (1/dot(N1,N2))*N1*N2');
+
+
 %Exemplo 2 
 % trans = [1.5;1.5;1.5];
 % T = translation(trans);
@@ -29,9 +33,9 @@ O = [O;ones(1,size(O,2))];
 % origin = [-0.5;-0.5;0.5];
 
 %Exemplo 3
-origin = [-0.5;-0.5;-0.5];
-T = [0.877,0.479,0,0;-0.479,0.8772,0,0;0,0,1,0;0,0,0,1];
-TO = T*O;
+% origin = [-0.5;-0.5;-0.5];
+% T = [0.877,0.479,0,0;-0.479,0.8772,0,0;0,0,1,0;0,0,0,1];
+% TO = T*O;
 
 
 
@@ -53,10 +57,23 @@ grid on
 az = 23;
 el = 15;
 %% First frame
-%drawPlan(N1,2.5);
-%drawPlan(N2,4);
-h = drawCube(O,'blue',0.05,0.3);
-drawCoordinateSystem(origin  ,[1;0;0],[0;0;1]);
+drawPlan(N1,2.5);
+drawPlan(N2,4);
+a = [2;4;2];
+b = T1*a;
+line([a(1),b(1)],[a(2),b(2)],[a(3),b(3)]);
+c = T2*b;
+d = T1*c;
+a = 5*a/norm(a);
+b = 5*b/norm(b);
+c = 5*c/norm(c);
+d = 5*d/norm(d);
+quiver3(0,0,0,a(1),a(2),a(3));
+quiver3(0,0,0,b(1),b(2),b(3));
+quiver3(0,0,0,c(1),c(2),c(3));
+quiver3(0,0,0,d(1),d(2),d(3));
+%h = drawCube(O,'blue',0.05,0.3);
+%drawCoordinateSystem(origin  ,[1;0;0],[0;0;1]);
 %plot3(O(1,:),O(2,:),O(3,:),'Color','blue');
 frame = getframe(fig);
 im{1} = frame2im(frame);

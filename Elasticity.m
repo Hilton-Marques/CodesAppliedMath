@@ -3,13 +3,33 @@ clear all;
 close all;
 
 %Object
+set(gca,'XColor', 'none','YColor','none','ZColor','none');
 O = rec3D(1,1,1); %set largura, comprimento e altura
 
 %Transformation
 % T = [2 0 0; 0 -0.5 0; 0 0 -0.5];
 %T = [-1 1/20 0; 1/20 -1 0; 0 0 0];
 %T = [1 0 0; -0.2 1 -1; -0.2 1 1];
-T = Rot3D(pi/2,[1;-2;4]);
+O_unique = unique(O','row','stable')';
+
+u = (O_unique(:,7) + O_unique(:,2))*0.5;
+v = (O_unique(:,6) + O_unique(:,4))*0.5;
+eixo = u - v;
+for i = 1:size(O_unique,2)
+    p = O_unique(:,i);
+    if dot(eixo,p) == 0
+        check = true;
+    end
+end
+hold on
+show(O);
+%plotAxis(eixo);
+vec([0;0;0],eixo)
+showDiags(O)
+drawPlan(eixo);
+axis([-1 1 -1 1 -1 1]);
+exportgraphics(gca,'halfplanes.png','Resolution',1000);
+T = Rot3D(pi,eixo);
 %Polar decomposition
 [A,S,B] = svd(T);
 U = B*S*B';
@@ -64,8 +84,13 @@ eul = rotm2eul(R);
 v = 1:(n/6); %6 faces
 i = (n/6)*ones(1,(n/6));
 fac = [v;v+i;v+2*i;v+3*i;v+4*i;v+5*i];
+O_unique = unique(O','row','stable')';
 h1 = patch('Vertices',O','Faces',fac,...
      'FaceVertexCData',hsv(6),'FaceColor',[0 0 1]);
+ for j = 1:size(O_unique,2)
+     p = O_unique(:,j);
+     text(p(1),p(2),p(3),num2str(j),'FontSize',12,'VerticalAlignment','top');
+ end
 view(-38,41);
 axis([-1 1 -1 1 -1 1]);
 set(h1, 'facealpha',0)
@@ -79,6 +104,11 @@ for i = 1:nFrames
     nv = InRot*InStre*O;
     h2 = patch('Vertices',nv','Faces',fac,...
      'FaceVertexCData',hsv(6),'FaceColor',[0 0 1]);
+    nv_unique = unique(nv','row','stable')';
+    for j = 1:size(nv_unique,2)
+        p = nv_unique(:,j);
+        h2(end+1) = text(p(1),p(2),p(3),num2str(j),'FontSize',15,'Color','red','VerticalAlignment','bottom');
+    end
     pause(0.03)
     delete(h2);
 end
@@ -98,7 +128,7 @@ else
     I = InRot*nv;
     h2 = patch('Vertices',I','Faces',fac,...
      'FaceVertexCData',hsv(6),'FaceColor',[0 0 1]);
-    pause(0.03)
+    pause(0.01)
     delete(h2);
     end
 end
@@ -106,6 +136,11 @@ end
 X=T*O;
 h2 = patch('Vertices',X','Faces',fac,...
     'FaceVertexCData',hsv(6),'FaceColor',[0 0 1]);
+X_unique = unique(X','row','stable')';
+for j = 1:size(X_unique,2)
+    p = X_unique(:,j);
+    h2(end+1) = text(p(1),p(2),p(3),num2str(j),'Color','red','VerticalAlignment','bottom');
+end
 end
 function ht = vector3D(xi,xf,c)
 x = xf - xi;
@@ -188,4 +223,92 @@ R = [cos(angle) -sin(angle) 0;...
     0 0 1];
 M = [plan1 plan2 n];
 Rot3D = M*R*M';
+end
+function plotAxis(v)
+a = v;
+b = -v;
+line([a(1),b(1)],[a(2),b(2)],[a(3),b(3)]);
+end
+function show(O)
+[~,n]=size(O);
+v = 1:(n/6); %6 faces
+i = (n/6)*ones(1,(n/6));
+fac = [v;v+i;v+2*i;v+3*i;v+4*i;v+5*i];
+O_unique = unique(O','row','stable')';
+h1 = patch('Vertices',O','Faces',fac,...
+     'FaceVertexCData',hsv(6),'FaceColor',[0 0 1]);
+%  for j = 1:size(O_unique,2)
+%      p = O_unique(:,j);
+%      text(p(1),p(2),p(3),num2str(j),'FontSize',12,'VerticalAlignment','top');
+%  end
+view(-170,21);
+axis([-1 1 -1 1 -1 1]);
+set(h1, 'facealpha',0)
+end
+function showDiags(O)
+ids = [7,2,5,1];
+for i = 1:4
+    p_a = O(:,ids(i));
+    plotAxis(p_a);
+    text(p_a(1),p_a(2),p_a(3),num2str(i),'FontSize',12,'VerticalAlignment','top');
+    text(-p_a(1),-p_a(2),-p_a(3),num2str(i),'FontSize',12,'VerticalAlignment','top');
+end
+end
+
+function drawPlan(n,d,color,A,xo)
+if nargin == 1
+    A = 20000;
+    xo = [0;0;0];
+    color = [1,0,0];
+    d = 0;
+elseif nargin == 2
+    xo = [0;0;0];
+    color = [1,0,0];
+    A = 20000;
+elseif nargin == 3
+    xo = [0;0;0];
+    A = 2000000;
+end
+[x,y] = findTriedro(n);
+xp1 = xo + A*x - n*d ;
+yp1 = xo + A*y - n*d ;
+xp2 = xo - A*x - n*d ;
+yp2 = xo - A*y - n*d ;
+h1 = fill3([xp1(1),yp1(1),xp2(1),yp2(1)],...
+    [xp1(2),yp1(2),xp2(2),yp2(2)],...
+    [xp1(3),yp1(3),xp2(3),yp2(3)],color);
+set(h1, 'facealpha',0.3);
+end
+function [x,y] = findTriedro(z)
+z = z/norm(z);
+uTemp = [z(3);z(1);-z(2)];
+uTemp = uTemp/norm(uTemp);
+if (dot(z,uTemp) == 1)
+    uTemp = uTemp([2,1,3]);
+end
+x = cross(uTemp,z);
+y = cross(z,x);
+end
+function vec(p1,p2)
+L = norm(p2 - p1);
+axis = p2 - p1;
+p_trans = p1 + axis;
+line([p1(1),p_trans(1)],[p1(2),p_trans(2)],...
+                [p1(3),p_trans(3)],'Color', 'black','Linewidth',1);
+
+axis = axis / norm(axis);
+axis_rot = cross(axis,[0,0,1]);
+angle =  acos(dot(axis,[0,0,1]));
+rot_matrix = axang2rotm([axis_rot,-angle]);
+
+
+hold on
+[X,Y,Z]=cylinder([0 (0.5)],20 );
+[m,n] = size(X);
+p = -0.05*[X(:)';Y(:)';Z(:)'];
+p = rot_matrix * p;
+X = reshape(p(1,:),m,n) + p_trans(1);
+Y = reshape(p(2,:),m,n) + p_trans(2);
+Z = reshape(p(3,:),m,n) + p_trans(3);
+h = surf(X,Y,Z,'FaceColor','magenta');
 end

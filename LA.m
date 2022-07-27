@@ -38,6 +38,7 @@ hold on
 T = Translation([1;3]);
 T = [1 0.5 0; 0.5 1 0;0 0 1];
 M = R*T*R';
+M = R;
 Transformation2(M,O);
 keyboard;
 O = T*O;
@@ -162,19 +163,16 @@ for i = 1:nFrames
 end
 X=T*O;
 h=fill(X(1,:), X(2,:), [0 0 1]);
-set(h, 'facealpha',0)
+set(h, 'facealpha',0);
 end
 
 function DrawObject(O,h)
-
 h2 = fill(O(1,:), O(2,:), [0 0 1]);
 set(h2, 'facealpha',0)
 if (nargin > 1)
     h2 = fill(O(1,:), O(2,:), [0 0 1]);
     set(h2, 'facealpha',h)
 end
-
-
 end
 
 function [D] = Object()

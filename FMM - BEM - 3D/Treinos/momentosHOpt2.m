@@ -3,7 +3,7 @@ close all
 clc
 
 ng = 25;
-n = 4;
+n = 2;
 a1 = 1;
 an = 2*(n)+1;
 size = (a1 + an)*(n+1)/2;
@@ -61,7 +61,7 @@ tic
 int = (1/(4*pi))*sum(Sb(n+1,xs-yc,[]).*M);
 exato = -0.000344263740987061;
 erro = abs(real(int) - exato)/exato
-keyboard;
+%keyboard;
 %M2L
 r = xl - yc;
 SSb = Sb(2*n + 1,r,[]);
@@ -70,6 +70,7 @@ for n_ = 0:n
     for m_ = -n_:n_
         for nc = 0: n
             for mc = -nc:nc
+                index = indexNM(n_+nc,m_ + mc)
                 L(count) = L(count) + ...
                     ((-1)^(n_))*SSb(indexNM(n_+nc,m_ + mc))*M(indexNM(nc,mc));
             end
