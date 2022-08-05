@@ -114,10 +114,10 @@ classdef Tetrahedra < handle
             dDAB = this.tripleTri([4,1,2],3);
             dDBC = this.tripleTri([4,2,3],1);
             dDCA = this.tripleTri([4,3,1],2);
-            figure 
-            hold on
-            view(30,30);
-            lighting gouraud;
+%             figure 
+%             hold on
+%             view(30,30);
+%             lighting gouraud;
             h = this.plotTetra();
             quiver3(D(1),D(2),D(3),OD(1),OD(2),OD(3));
             plot3(0,0,0,'o','MarkerFaceColor','cyan','MarkerSize',5);
@@ -128,7 +128,7 @@ classdef Tetrahedra < handle
             values = [dDAB;dDBC;dDCA]*p'
             [max_value,argmax] = max([dDAB;dDBC;dDCA]*p');
             
-            if (max_value > 0)
+            if (max_value >= -1e-7)
             %if dot(dDAB,OD) > 0
             if argmax == 1
                 d = dDAB;
@@ -140,7 +140,7 @@ classdef Tetrahedra < handle
                 bool = false;
                 this.plotTriAndVector(D,A,B,d);
                 delete(h);
-                hold off
+                %hold off
                 return
             %elseif dot(dDBC,OD) > 0
             elseif argmax == 2
@@ -153,7 +153,7 @@ classdef Tetrahedra < handle
                 bool = false;
                 this.plotTriAndVector(D,B,C,d);
                 delete(h);
-                hold off
+                %hold off
                 return
             %elseif dot(dDCA,OD) > 0
             elseif argmax == 3
@@ -166,7 +166,7 @@ classdef Tetrahedra < handle
                 bool = false;
                 this.plotTriAndVector(D,A,C,d);
                 delete(h);
-                hold off
+                %hold off
                 return
             end
             end
@@ -268,6 +268,23 @@ classdef Tetrahedra < handle
         function h = plotTetra(this)
             k = [1,2,3;1,2,4;2,3,4;3,1,4];
             h = trisurf(k,this.pts(:,1),this.pts(:,2),this.pts(:,3),'FaceAlpha',0.5);
+        end
+        function bool = isInside(this)
+            pt = [0,0,0];
+            bool = true;
+            k = convhull(this.pts(:,1),this.pts(:,2),this.pts(:,3));
+            n = size(k,1);
+            for i = 1:n
+                p0 = this.pts(k(i,1),:);
+                p1 = this.pts(k(i,2),:);
+                p2 = this.pts(k(i,3),:);
+                n = -cross(p2 - p0, p1 - p0);
+                u = pt - p0;
+                if dot(n,u) > 0
+                    bool = false;
+                    return;
+                end
+            end
         end
         
     end
