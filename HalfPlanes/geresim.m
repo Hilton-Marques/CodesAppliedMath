@@ -2639,12 +2639,14 @@ p = o + lam*ray;
 end
 function planes = CreateHalfs(pts)
 faces = cell(6,1);
-faces(1) = {[pts(1,:) ; pts(2, :) ; pts(4,:) ; pts(3,:)]};
-faces(2) = {[pts(5,:) ; pts(7, :) ; pts(8,:) ; pts(6,:)]};
-faces(3) = {[pts(2,:) ; pts(6, :) ; pts(8,:) ; pts(4,:)]};
-faces(4) = {[pts(1,:) ; pts(3, :) ; pts(7,:) ; pts(5,:)]};
-faces(5) = {[pts(1,:) ; pts(5, :) ; pts(6,:) ; pts(2,:)]};
-faces(6) = {[pts(3,:) ; pts(4, :) ; pts(8,:) ; pts(7,:)]};
+faces(1) = {[pts(1,:) ; pts(4, :) ; pts(3,:) ; pts(2,:)]};
+faces(2) = {[pts(8,:) ; pts(5, :) ; pts(7,:) ; pts(6,:)]};
+
+faces(3) = {[pts(2,:) ; pts(8, :) ; pts(4,:) ; pts(6,:)]};
+faces(4) = {[pts(1,:) ; pts(7, :) ; pts(5,:) ; pts(3,:)]};
+
+faces(5) = {[pts(5,:) ; pts(2, :) ; pts(6,:) ; pts(1,:)]};
+faces(6) = {[pts(4,:) ; pts(7, :) ; pts(3,:) ; pts(8,:)]};
 planes = zeros(6,4);
 for i = 1:6
     face_pts = faces{i};
@@ -2682,12 +2684,17 @@ function plane = CreateFittingPlane(pts)
 centroide = mean(pts);
 normal = zeros(1,3);
 plane = zeros(1,4);
-k = convhull(pts(:,1),pts(:,2),pts(:,3));
+%k = convhull(pts(:,1),pts(:,2),pts(:,3));
 
-
-for i = 1:size(k,2)
-    normal = normal + getNormal(pts(k(i,:),:));
+a = getNormal(pts([1,2,3],:));
+b = getNormal(pts([1,3,4],:));
+if dot(a,b) < 0
+    b = -b;
 end
+normal = a + b;
+% for i = 1:size(k,2)
+%     normal = normal + getNormal(pts(k(i,:),:));
+% end
 
 % for i = 1:4
 %     p0 = pts(i,:);
