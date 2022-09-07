@@ -1,4 +1,4 @@
-classdef Tetrahedra < handle
+classdef QuickTetrahedra < handle
     properties
         triangle
         v4
@@ -6,10 +6,11 @@ classdef Tetrahedra < handle
         halfedges
         faces
         n_true_faces
+        triangles = {};
         inc = []
     end
     methods
-        function this = Tetrahedra(triangle,v4)
+        function this = QuickTetrahedra(triangle,v4)
             this.triangle = triangle;
             this.v4 = v4;
             this.markVerts();
@@ -18,9 +19,6 @@ classdef Tetrahedra < handle
             this.halfedges(12) = HalfEdge();
             this.faces = Face();
             this.faces(4) = Face();
-            for i = 1:4
-                plot3(this.pts(i,1),this.pts(i,2),this.pts(i,3),'o','color','green','MarkerFaceColor','green');
-            end
             % Create Halfs
             
             % primeiro triangulo ABC
@@ -137,18 +135,30 @@ classdef Tetrahedra < handle
         end
         function inc = getIds(this)
             count = 0;
+            this.pts = [];
+            this.triangles = Face.empty;
             for f = this.faces
                 if ~(f.disabled)
                     this.inc(end+1,1:3) = f.inc;
+                    this.triangles(end+1) = f;
                     count = count + 1;
-                    if nargin == 1
-                        color = rand(1,3);
-                    end
-                    f.show(color);
                 end
             end
             this.n_true_faces = count;
             inc = this.inc;
+        end
+        function volume = getVolume(this)
+            n = size(this.inc,1);
+            volume = 0.0;
+            for i = 1:n
+                f = this.triangles(i);
+                qi = f.pts(1,:);
+                qj = f.pts(2,:);
+                qk = f.pts(3,:);
+                volume_i = (dot(qi,cross(qj,qk)));
+                volume = volume + volume_i;
+            end
+            volume = volume/6;
         end
         function markVerts(this)
             this.triangle.v1.Marked = true;

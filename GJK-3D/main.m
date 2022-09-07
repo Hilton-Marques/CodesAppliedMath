@@ -440,6 +440,8 @@ plot3(p_m(k,1),p_m(k,2),p_m(k,3),'*');
 bool = isInside(p_m,[0,0,0]);
 [bool,p] = GJK(cube1,cube2);
 out = check(p,planes);
+
+
 hold off
 figure
 hold on
@@ -454,6 +456,8 @@ view(-28,17);
 plotPt(p,'yellow');
 cube1.plot_tri();
 cube2.plot_tri();
+
+
 %plotPt(p,'red');
 exportgraphics(gca,'GJK.jpeg','Resolution',1000)
 findInterior(p);

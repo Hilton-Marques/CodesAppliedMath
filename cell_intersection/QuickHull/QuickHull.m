@@ -1,115 +1,25 @@
-classdef convexHull < handle
+classdef QuickHull < handle
     properties
         verts;
         n;
         faceData = struct('face', Face.empty,'hed',HalfEdge.empty);
-        gif
     end
     methods
-        function this = convexHull(verts,gif)
-            this.gif = gif;
+        function [this,k,volume] = QuickHull(pts)
+            n = size(pts,1);
+            verts(n) = Verts();
+            for i = 1:n
+                p = pts(i,:);
+                verts(i) = Verts(i,p);
+            end
             this.verts = verts;
             this.n = length(verts);
-            this.getInitialTetrahedra();
+            tetrahedra = this.getPoly();
+            k = tetrahedra.getIds();            
+            volume = tetrahedra.getVolume();
         end
-        function polyhedra = getConvexHull(this)
-            vertices = this.verts;
-            edges = Edge.empty;
-            supportEdges = Edge.empty;
-            triangles = TriangleEdge.empty;
-            triangle = this.findTriangleOnHull();
-            supportEdges(end+1) = triangle.edges(1).getTwin();
-            for i = 2:3
-                edgei = triangle.edges(i).getTwin();
-                edges(end+1) = edgei;
-                supportEdges(end+1) = edgei;
-            end
-            triangles(end+1) = triangle;
-            nel = 1;
-            while ( length(edges) ~= 0)
-                edgei = edges(end);
-                edges(end) = [];
-                if (~edgei.isProcessed())
-                    q = this.pivotOnEdge(edgei);
-                    t = TriangleEdge(edgei,q);
-                    triangles(end+1) = t;
-                    nel = nel + 1;
-                    t.id = nel;
-                    for i = 2:3
-                        flag = false;
-                        for k = 1:length(supportEdges)
-                            edgek = supportEdges(k);
-                            if (    (t.edges(i).p1.id == edgek.p0.id) && ...
-                                    (t.edges(i).p0.id == edgek.p1.id) || ...
-                                    (t.edges(i).p0.id == edgek.p0.id) && ...
-                                    (t.edges(i).p1.id == edgek.p1.id)  )
-                                edgek.processed = true;
-                                flag = true;
-                                t.edges(i) = edgek.twin;
-                                break;
-                            end
-                        end
-                        if ~flag
-                            edgej = t.edges(i).getTwin;
-                            edges(end+1) = edgej;
-                            supportEdges(end+1) = edgej;
-                        end
-                    end
-                    edgei.processed = true;
-                end
-            end
-            polyhedra = Polyhedra(triangles);
-        end
-        function t = findTriangleOnHull(this)
-            edge = this.findEdgeOnHull();
-            p = this.pivotOnEdge(edge);
-            t = TriangleEdge(edge, p);
-        end
-        function v = pivotOnEdge(this,edge)
-            vertices = this.verts;
-            q0 = edge.getP0;
-            q1 = edge.getP1;
-            p0 = vertices(1).coord;
-            p = p0;
-            area2 = this.squaredArea(q0,q1,p0);
-            id = 1;
-            v = vertices(id);
-            for i = 2:length(vertices)
-                pi = vertices(i).coord;
-                volume = this.signedVolume(q0,q1,p,pi);
-                if volume < 0
-                    p = pi;
-                    v = vertices(i);
-                elseif (volume == 0)
-                    area2_ = this.squaredArea(q0,q1,pi);
-                    if area2_ > area2
-                        p = pi;
-                        v = vertices(i);
-                        area2 = area2_;
-                    end
-                end
-            end
-        end
-        function edge = findEdgeOnHull(this)
-            vertices = this.verts;
-            pRight = vertices(1).coord;
-            x = pRight(1);
-            id = 1;
-            for i =  2:length(vertices)
-                pi = vertices(i).coord;
-                x_ = pi(1);
-                if (x_ > x)
-                    x = x_;
-                    pRight = pi;
-                    id = vertices(i).id;
-                end
-            end
-            suportVertex = Verts(length(vertices) + 1, pRight + [0,1,0]);
-            edge = Edge ( suportVertex, vertices(id));
-            r = this.pivotOnEdge(edge);
-            edge = Edge(vertices(id),r);
-        end
-        function getInitialTetrahedra(this)
+
+        function tetrahedra = getPoly(this)
             % find extremal points
             extreme_values = [this.verts(1).coord(1),this.verts(1).coord(1),...
                 this.verts(1).coord(2),this.verts(1).coord(2),...
@@ -154,8 +64,6 @@ classdef convexHull < handle
                 end
             end
             long_ray = Ray(this.verts(edge(1)),this.verts(edge(2)));
-            long_ray.plot();
-            this.gif.update(45);
             %find extremal triangle
             max_dist = -1;
             selected_id = -1;
@@ -168,8 +76,6 @@ classdef convexHull < handle
                 end                
             end
             base_triangle = Triangle(this.verts(edge(1)), this.verts(edge(2)), this.verts(selected_id));
-            base_triangle.show();
-            this.gif.update(45);
             %find extremal tetrahedra
             max_dist = -1;
             selected_id = -1;
@@ -188,10 +94,9 @@ classdef convexHull < handle
             if signed > 0
                 base_triangle = Triangle(base_triangle.v1,base_triangle.v3, base_triangle.v2);
             end
-            tetrahedra = Tetrahedra(base_triangle,this.verts(selected_id));
+            tetrahedra = QuickTetrahedra(base_triangle,this.verts(selected_id));
             this.buildEyeTetrahedra(tetrahedra);
             %tetrahedra.show();
-            this.gif.update(45);
             %% inicializa a pilha de faces que possuem pontos a vista
             faceList = Face.empty;
             for f = tetrahedra.faces
@@ -226,7 +131,7 @@ classdef convexHull < handle
                     else
                         face.was_visited_iter = iter;
                         % é visivel?
-                        a = face.getDistanceFromPoint(far_point_iter.coord)
+                        a = face.getDistanceFromPoint(far_point_iter.coord);
                         if (face.getDistanceFromPoint(far_point_iter.coord) > 0)
                             face.isVisibleFaceOnCurrentIter = true;
                             visibleFaces(end+1) = face;                            
@@ -249,7 +154,6 @@ classdef convexHull < handle
                     horizonHeds(end+1) = entered_hed;
                 end
                 %this.plotHorizon(horizonHeds,face_iter.color);
-                this.gif.update(45);
                 % all visible faces should be disabled
                 for face = visibleFaces
                     face.disabled = true;
@@ -320,22 +224,13 @@ classdef convexHull < handle
                 %update face stack
                 for i = 1:n_horizons
                     face = tetrahedra.faces(new_faces_id(i));
-                    face.show(rand(1,3));
                     if ~isempty(face.pointsOnPositiveSide)
-                        %face.show(rand(1,3));
                         faceList(end+1) = face;
                     end
                 end
-                this.gif.update(45);
             end
-            figure
-            hold on
-            view(30,30);
-            tetrahedra.show('cyan');
-            this.gif.update(90);
-            this.gif.print()
-   
         end
+
         function buildEyeTetrahedra(this,tetrahedra)
             for v = this.verts
                 if ~v.Marked

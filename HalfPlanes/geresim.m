@@ -993,7 +993,6 @@ for i = 1:size(M,1)
     
 end
 bool = true;
-% center = [1,2,3];
 coord_dual = [];
 for i = 1:m
     n = A(i,1:3);
@@ -2300,16 +2299,14 @@ pts_32215 = [-2851.50000 935.000000 -3071.89990 ; ...
 -2899.50000 845.000000 -3089.38989 ; ...
 -2987.50000 895.000000 -3089.25000];
 
-pts_28397 = [-2803.50000 1015.00000 -3060.35010 ; ...
--2891.50000 1065.00000 -3065.64990 ; ...
--2939.50000 975.000000 -3067.97998 ; ...
--2851.50000 935.000000 -3064.89990 ; ...
--2803.50000 1015.00000 -3067.35010 ; ...
--2891.50000 1065.00000 -3072.64990 ; ...
--2939.50000 975.000000 -3074.97998 ; ...
--2851.50000 935.000000 -3071.89990 ];
-ids = [1,2,4,3,5,6,7,8];
-pts_28397 = pts_28397(ids,:);
+pts_28397 = [-2803.50000 , 1015.00000 , -3060.35010 ; ... 
+-2891.50000 , 1065.00000 , -3065.64990 ; ... 
+-2851.50000 , 935.000000 , -3064.89990 ; ... 
+-2939.50000 , 975.000000 , -3067.97998 ; ... 
+-2803.50000 , 1015.00000 , -3067.35010 ; ... 
+-2891.50000 , 1065.00000 , -3072.64990 ; ... 
+-2851.50000 , 935.000000 , -3071.89990 ; ... 
+-2939.50000 , 975.000000 , -3074.97998 ];
 planes = CreateHalfs(pts_28397);
 
 planes_28397 = [-0.0529094264 -0.0111526381 0.998537064  2919.43213  ; ... 
@@ -2327,7 +2324,7 @@ figure
 hold on
 axis off
 view(-70,43);
-showHalfSpace(pts)
+showHalfSpace(pts);
 showSurface(pts);
 
 
@@ -2494,15 +2491,11 @@ out = (volume_concave_top + volume_concave_bottom) / ...
     (volume_convexo_top + volume_concave_top + volume_convexo_bottom + volume_concave_bottom);
 end
 function [solid1,solid2,solid3,solid4,normals] = childrenCells(pts)
-
 top = [pts(1,:);pts(2,:);pts(4,:); pts(3,:)];
 bottom = [pts(5,:);pts(6,:);pts(8,:); pts(7,:)];
 normals = CreateNormals(top);
-
 new_pts_top = Subdivide(top);
-
 new_pts_bottom = Subdivide(bottom);
-
 solid1 = [[top(1,:) ; new_pts_top(1,:); new_pts_top(5,:);new_pts_top(4,:)];...
     [bottom(1,:) ; new_pts_bottom(1,:); new_pts_bottom(5,:);new_pts_bottom(4,:)]];
 
@@ -2639,14 +2632,29 @@ p = o + lam*ray;
 end
 function planes = CreateHalfs(pts)
 faces = cell(6,1);
-faces(1) = {[pts(1,:) ; pts(4, :) ; pts(3,:) ; pts(2,:)]};
-faces(2) = {[pts(8,:) ; pts(5, :) ; pts(7,:) ; pts(6,:)]};
 
-faces(3) = {[pts(2,:) ; pts(8, :) ; pts(4,:) ; pts(6,:)]};
-faces(4) = {[pts(1,:) ; pts(7, :) ; pts(5,:) ; pts(3,:)]};
 
-faces(5) = {[pts(5,:) ; pts(2, :) ; pts(6,:) ; pts(1,:)]};
-faces(6) = {[pts(4,:) ; pts(7, :) ; pts(3,:) ; pts(8,:)]};
+% faces(1) = {[pts(1,:) ; pts(4, :) ; pts(3,:) ; pts(2,:)]};
+% faces(2) = {[pts(8,:) ; pts(5, :) ; pts(7,:) ; pts(6,:)]};
+% faces(3) = {[pts(2,:) ; pts(8, :) ; pts(4,:) ; pts(6,:)]};
+% faces(4) = {[pts(1,:) ; pts(7, :) ; pts(5,:) ; pts(3,:)]};
+% faces(5) = {[pts(5,:) ; pts(2, :) ; pts(6,:) ; pts(1,:)]};
+% faces(6) = {[pts(4,:) ; pts(7, :) ; pts(3,:) ; pts(8,:)]};
+
+% faces(1) = {[pts(1,:) ; pts(3, :) ; pts(4,:) ; pts(2,:)]};
+% faces(2) = {[pts(5,:) ; pts(7, :) ; pts(8,:) ; pts(6,:)]};
+% faces(3) = {[pts(2,:) ; pts(4, :) ; pts(8,:) ; pts(6,:)]};
+% faces(4) = {[pts(1,:) ; pts(3, :) ; pts(7,:) ; pts(5,:)]};
+% faces(5) = {[pts(1,:) ; pts(2, :) ; pts(6,:) ; pts(5,:)]};
+% faces(6) = {[pts(3,:) ; pts(4, :) ; pts(8,:) ; pts(7,:)]};
+
+
+faces(1) = {[ pts(1,:) ; pts(2,:) ; pts(4,:) ; pts(3,:)] };
+faces(2) = {[ pts(5,:) ; pts(7,:) ; pts(8,:) ; pts(6,:)] };
+faces(3) = {[ pts(2,:) ; pts(6,:) ; pts(8,:) ; pts(4,:)] };
+faces(4) = {[ pts(1,:) ; pts(3,:) ; pts(7,:) ; pts(5,:)] };
+faces(5) = {[ pts(1,:) ; pts(5,:) ; pts(6,:) ; pts(2,:)] };
+faces(6) = {[ pts(3,:) ; pts(4,:) ; pts(7,:) ; pts(7,:)] };
 planes = zeros(6,4);
 for i = 1:6
     face_pts = faces{i};
@@ -2686,35 +2694,34 @@ normal = zeros(1,3);
 plane = zeros(1,4);
 %k = convhull(pts(:,1),pts(:,2),pts(:,3));
 
-a = getNormal(pts([1,2,3],:));
-b = getNormal(pts([1,3,4],:));
-if dot(a,b) < 0
-    b = -b;
-end
-normal = a + b;
+%a = getNormal(pts([1,2,3],:));
+% b = getNormal(pts([1,3,4],:));
+% if dot(a,b) < 0
+%     b = -b;
+% end
+% normal = a + b;
 % for i = 1:size(k,2)
 %     normal = normal + getNormal(pts(k(i,:),:));
 % end
-
-% for i = 1:4
-%     p0 = pts(i,:);
-%     p1 = pts(mod(i,4) + 1 , :);
-%     p2 = pts(mod(i+1,4) + 1 , :);
-%     normal_i = cross(p1-p0,p2-p0);
-%     len = norm(normal_i);
-%     if len == 0
-%         continue
-%     end
-%     normal_i = normal_i / len;
-%     normal = normal + normal_i;
-% end
-
+for i = 1:4
+    p0 = pts(i,:);
+    p1 = pts(mod(i,4) + 1 , :);
+    p2 = pts(mod(i+1,4) + 1 , :);
+    normal_i = cross(p1-p0,p2-p0);
+    len = norm(normal_i);
+    if len == 0
+        continue
+    end
+    normal_i = normal_i / len;
+    normal = normal + normal_i;
+end
 if norm(normal) == 0
     return
 end
 normal = normal/norm(normal);
 plane = [normal,-dot(normal, centroide)];
 end
+
 function normal = getNormal(pts)
 p0 = pts(1,:);
 p1 = pts(2,:);

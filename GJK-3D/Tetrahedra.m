@@ -199,6 +199,7 @@ classdef Tetrahedra < handle
                 d = -d;
             end
         end
+        
         function out = checkDegenerate(this)
             out = [0,0,0];
             count = 1;

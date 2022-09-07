@@ -89,6 +89,7 @@ for i = 1:length(points)
 end
 gif.update(90);
 convex = convexHull(vertices,gif);
+keyboard
 triangles = convex.getConvexHull();
 for t = triangles
     t.show('r');
