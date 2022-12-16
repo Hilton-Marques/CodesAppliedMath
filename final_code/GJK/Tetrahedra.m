@@ -2,7 +2,7 @@ classdef Tetrahedra < handle
     properties
         m_n = 0
         m_pts = zeros(4,3)
-        m_tol = 9.9e-7
+        m_tol = 1.9e-7
     end
     methods
         function this = Tetrahedra()

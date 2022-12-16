@@ -31,8 +31,9 @@ classdef ConvexCell < handle
             v = this.pts(argmax,:);
         end
         function show(this,color)
+            %this.plot_wireframe('black');
             conec = convhull(this.pts(:,1), this.pts(:,2),this.pts(:,3));
-            trisurf(conec,this.pts(:,1), this.pts(:,2), this.pts(:,3),'FaceAlpha',0.6,'FaceColor',color,'EdgeAlpha',1.0);
+            trisurf(conec,this.pts(:,1), this.pts(:,2), this.pts(:,3),'FaceAlpha',0.7,'FaceColor',color,'EdgeAlpha',0.0);
         end
     end
 end

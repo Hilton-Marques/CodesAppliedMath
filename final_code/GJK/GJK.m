@@ -41,9 +41,11 @@ classdef GJK < handle
             d = -A;
             d = d/norm(d);
             while true
+                d = d/norm(d);
                 vA = this.m_convex_A.supportfcn(d');
                 vB = this.m_convex_B.supportfcn(-d');
                 P = vA - vB;
+                a = dot(P,d)/norm(P)
                 if dot(P,d) <= this.m_tol
                     bool = false;
                     return
