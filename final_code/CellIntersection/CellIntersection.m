@@ -7,7 +7,7 @@ classdef CellIntersection < handle
         m_convex_A
         m_convex_B
         m_threshold
-        m_threshold_volume_abs = 1000
+        m_threshold_volume_abs = 1.0
         m_p % interior point
         m_drawer Drawer
         m_gjk_obj GJK

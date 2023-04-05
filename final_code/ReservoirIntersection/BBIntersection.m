@@ -80,7 +80,7 @@ classdef BBIntersection < handle
             for i = 1:n
                 cell = this.GridToBin(this.m_map(i,:,:));
                 bin_count(cell) = bin_count(cell) + 1; 
-                collisions(end+1:end+length(cell),:) = this.m_ids(i);
+                collisions(end+1:end+length(cell),:) = i; %this.m_ids(i);
                 cell_ids(end+1:end+length(cell),:) = cell;
             end
             sum(bin_count);
@@ -99,6 +99,9 @@ classdef BBIntersection < handle
                 bins(bin_offset(bin_id) + count(bin_id)) = cell_id;
                 count(bin_id) = count(bin_id) + 1;
             end
+            ids = this.BinToGrid(483004);
+            %index = this.GridToBin(ids);
+            bb = this.GetBinBB(ids);
             this.m_collisions = bins;
             this.m_cell_off = bin_offset;
         end
@@ -110,6 +113,19 @@ classdef BBIntersection < handle
             [X,Y,Z] = meshgrid(x,y,z);
             cells = ((Z * this.m_ncell(2)) + Y)*(this.m_ncell(1)) + X;
             cells = cells(:) + 1;
+        end
+        function id = BinToGrid(this,index)
+            m = this.m_ncell(1);
+            n = this.m_ncell(2);
+            a = floor(index/(m*n));
+            f = index - m*n*a;
+            r = mod(f,m);
+            i = max(((f - r)/m),1); % + 1
+            j = mod(f-1,m); % + 1
+            k = a; % + 1
+            %id = cat(3,[j,j],[i,i],[k,k]);
+            id = [j,i,k];
+            check = m*n*(k) + m*(i) + j + 1;
         end
         function [cells,ids] = FindGroup(this,cell)
             bb = this.GetBB(cell);

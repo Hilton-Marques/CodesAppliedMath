@@ -1,7 +1,9 @@
 clc;
 clear;
 close all;
-addpath("CellIntersection\","ConvexCell\","Drawer\","GJK\","QuickHull\","ReservoirIntersection\");
+
+addpath("ConvexCell\","Drawer\","GJK\","QuickHull\","ReservoirIntersection\","CellIntersection\");
+%addpath("CellIntersection\");
 %drawer = Drawer(); % drawCells
 n = 1000;
 model_A = readmatrix("model-182.109.txt");
@@ -9,12 +11,14 @@ ids_A = model_A(:,1);
 model_A = model_A(1:end,2:end);
 %model_B = readmatrix("model-2511.17.txt");
 model_B = readmatrix("model-2473.5.txt");
+ids_n = 1:length(model_B);
 ids_B = model_B(:,1);
 model_B = model_B(1:end,2:end);
 drawer = Drawer();
 %drawer.showModel(model_A,drawer.m_red);
 %drawer.showModel(model_B,drawer.m_blue);
-%ReservoirIntersection(model_B,model_B,1,ids_B,ids_A);
+ReservoirIntersection(model_B,model_B,1,ids_B,ids_B);
+%ReservoirIntersection(model_B,model_B,1,ids_B,ids_B);
 
 %view(-99,85);
 %drawer.showModel(model_B,drawer.m_blue);
@@ -149,7 +153,9 @@ pts_7864 = [2736.82812 -514.750000 -3212.38989 ; ...
 
 %pts_1 = pts_572;
 %pts_2 = pts_53067;
-pts_1 = pts_226;
-pts_2 = pts_7864;
-threshold = 0.1;
+% pts_1 = pts_226;
+% pts_2 = pts_7864;
+pts_1 = pts_146;
+pts_2 = pts_4132;
+threshold = 0.001;
 [cell_intersection_obj,volume] = CellIntersection(pts_1,pts_2,threshold);

@@ -13,10 +13,11 @@ classdef ReservoirIntersection < handle
             this.m_model_A = model_A;
             this.m_model_B = model_B;
             %this.m_drawer = Drawer(this);
-            this.m_bb = BBIntersection(model_B);
+            this.m_bb = BBIntersection(model_A,ids_A);
             this.m_threshold = threshold;  
             this.m_ids = ids_A;
-            err = this.CheckSize();
+            %err = this.CheckSize();
+            volume = this.Intersection();
         end
         function err = CheckSize(this)
             e = zeros(size(this.m_model_A,1),1);
@@ -45,7 +46,7 @@ classdef ReservoirIntersection < handle
         function volume = Intersection(this)
             volume = 0;
             %for i = 1:size(model_A,2)
-            for i = 1:size(this.m_model_A,1)                
+            for i = 30475:size(this.m_model_A,1)                
                 cell_A = reshape(this.m_model_A(i,:),3,8)';
                 [cells,bins_ids] = this.m_bb.FindGroup(this.m_model_A(i,:));
                 new_cells_A = {};

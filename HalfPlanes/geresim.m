@@ -2,9 +2,9 @@ clc;
 clear;
 close all;
 
-BuildSubdivide();
+%BuildSubdivide();
 
-keyboard;
+%keyboard;
 %find interior
 %cell 76020
 % showReal();
@@ -772,7 +772,7 @@ axis equal
 
 hold off
 
-function drawPlan(n,d,color,A,xf,xo)
+function h1 = drawPlan(n,d,color,A,xf,xo)
 if nargin == 1
     A = 20000;
     xo = [0;0;0];
@@ -959,6 +959,7 @@ end
 function [k2,dualPoints,vol,bool,center] = findInterior(M,trans,flag)
 if nargin == 1
     trans = [0,0,0];
+    flag = false;
 end
 bool = false;
 %A = A(1:6,:);
@@ -1816,12 +1817,12 @@ p6 = [pts(3,:);pts(4,:);pts(8,:); pts(7,:)];
 
 hold on
 showCell(pts);
-NormalsFromTopsPlane(p1);
-NormalsFromTopsPlane(p2);
-NormalsFromVerticalPlanes(p3);
-NormalsFromVerticalPlanes(p4);
-NormalsFromVerticalPlanes(p5);
-NormalsFromVerticalPlanes(p6,true);
+%NormalsFromTopsPlane(p1);
+%NormalsFromTopsPlane(p2);
+%NormalsFromVerticalPlanes(p3);
+%NormalsFromVerticalPlanes(p4);
+%NormalsFromVerticalPlanes(p5);
+%NormalsFromVerticalPlanes(p6,true);
 end
 function NormalsFromVerticalPlanes(plane, flag)
 if nargin == 1
@@ -2316,9 +2317,35 @@ planes_28397 = [-0.0529094264 -0.0111526381 0.998537064  2919.43213  ; ...
 0.494009405   0.869456530   -0.00000000  502.456970  ; ... 
 -0.413802952  -0.910366535  0.00000000   -328.766479 ];
 
-pts = pts_28397;
-planes = planes_28397;
+pts_degFace = 1.0e+03 * [[0.187500000000000  -0.385000000000000  -3.084879882812500];...
+              [0.099500000000000  -0.345000000000000  -3.084870117187500];...
+              [0.139500000000000  -0.475000000000000  -3.089310058593750];...
+              [0.051500000000000  -0.425000000000000  -3.093459960937500];...
+              [0.187500000000000  -0.385000000000000  -3.091290039062500];...
+              [0.099500000000000  -0.345000000000000  -3.091870117187500];...
+              [0.139500000000000  -0.475000000000000  -3.089310058593750];...
+              [0.051500000000000  -0.425000000000000  -3.093459960937500]];
+planes_degFace = 1.0e+03 * [[-0.000048481005709  -0.000050230320221   0.000997560277385   3.065920448963012];...
+                       [ 0.000019918862483  -0.000012616599804  -0.000999721991519  -3.098144654066119];...
+                       [-0.000857492925713   0.000514495755428                   0   0.262821581730895];...
+                       [ 0.000882352941176  -0.000470588235294                   0  -0.346617647058824];...
+                       [ 0.000413802944301   0.000910366477463                   0   0.272903041766631];...
+                       [-0.000413802944301  -0.000910366477463                   0  -0.374698566064722]];
 
+pts_15382 = [[ -344.500000 2185.00000 -3147.56006] ; ...
+[ -432.500000 2225.00000 -3158.59009] ; ...
+[ -392.500000 2095.00000 -3152.87012] ; ...
+[ -480.500000 2145.00000 -3166.83008] ; ...
+[ -344.500000 2185.00000 -3147.56006] ; ...
+[ -432.500000 2225.00000 -3158.59009] ; ...
+[ -392.500000 2095.00000 -3154.64990] ; ...
+[ -480.500000 2145.00000 -3166.83008]];
+
+planes = CreateHalfs(pts_degFace);
+
+pts = pts_degFace;
+planes = planes;
+[k2,dualPoints,vol,bool,center] = findInterior(planes)
 
 figure
 hold on
@@ -2332,7 +2359,9 @@ plotPlaness(planes(1:2,:));
 bb = getBB(pts);
 axis(bb);
 view(-153,29);
-
+for i = 1:size(dualPoints,1)
+    plot3(dualPoints(i,1),dualPoints(i,2),dualPoints(i,3),'o','MarkerFaceColor','green','MarkerSize',5);
+end
 new_coords = move(pts,planes);
 %exportgraphics(gca,strcat('surface_85140','.png'),'Resolution',333);
 
@@ -2415,7 +2444,7 @@ for i = 1:size(pts,1)
 end
 k = [1,2,3;1,3,4;1,4,5;1,5,2];
 R = sum(pts,1)/8;
-plot3(R(1),R(2),R(3),'o','MarkerSize',10,'MarkerFaceColor','b');
+%plot3(R(1),R(2),R(3),'o','MarkerSize',10,'MarkerFaceColor','b');
 for i = 1:6
     coords = planes{i};
     p0 = coords{1}';
@@ -2528,18 +2557,20 @@ left = planes(4,1:3);
 front = planes(5,1:3);
 back = planes(6,1:3);
 ids_pts = [1,2,4,3,5,6,8,7];
-%pts = pts(ids_pts,:);
+pts = pts(ids_pts,:);
 vert_planes = [left;front;right;back];
 ids_planes = [4,5,3,6,1,2];
 planes = planes(ids_planes,:);
 view(62,80);
 
 [o,d] = intersect3D(-planes(6,4)*planes(6,1:3),-planes(5,4)*planes(5,1:3));
-
+z = d/norm(d);
+edges_len = zeros(1,4);
 for i = 1:4
     p_i = pts(i,:);
     p_j = pts(i+4,:);
     edge = p_j - p_i;
+    edges_len(i) = dot(edge,edge);
     if (dot(edge,edge) == 0)
         edge_dir = cross(vert_planes(i,:),vert_planes(mod(i,4)+1,:));
         p_i = p_j + edge_dir;
@@ -2548,13 +2579,37 @@ for i = 1:4
     end
     p_j = rayPlaneIntersection(p_i,edge,planes(5,:));
     p_i = rayPlaneIntersection(p_i,edge,planes(6,:));
+    %plot3(p_j(1),p_j(2),p_j(3),'o','MarkerSize',8,'MarkerFaceColor','b');
+    %plot3(p_i(1),p_i(2),p_i(3),'o','MarkerSize',8,'MarkerFaceColor','b');
     new_edge = p_j - p_i;
     if dot(edge,new_edge) > 0
         p_j = rayPlaneIntersection(o,d,planes(i,:));
         p_i = rayPlaneIntersection(o,d,planes(mod(i,4)+1,:));
     end
+    %h1 = drawPlan(planes(i,1:3)',planes(i,4),'b');
+    %h2 = drawPlan(planes(mod(i,4)+1,1:3)',planes(mod(i,4)+1,4),'b');
+
+    %plot3(p_j(1),p_j(2),p_j(3),'o','MarkerSize',8,'MarkerFaceColor','b');
+    %plot3(p_i(1),p_i(2),p_i(3),'o','MarkerSize',8,'MarkerFaceColor','b');
     new_coords(i,:) = p_j;
     new_coords(i + 4,:) = p_i;
+    %delete([h1,h2]);
+end
+%check degenerateFaces
+for i = 1:4
+    ei = edges_len(i);
+    j = mod(i,4)+1;
+    ej = edges_len(j);
+    n = planes(mod(i,4)+1,1:3);
+    if (ei == 0 ) && (ej == 0) && abs(dot(n,z)) < 1e-3
+        %denerate face
+        p_i = rayPlaneIntersection(o,d,planes(i,:));
+        p_j = rayPlaneIntersection(o,d,planes(mod(j,4)+1,:));
+        new_coords(i,:) = p_i;
+        new_coords(i + 4,:) = p_i;
+        new_coords(j,:) = p_j;
+        new_coords(j + 4,:) = p_j;
+    end
 end
 
 for j = 1: 8
@@ -2593,16 +2648,16 @@ for i = 1:4
     %plot3(pt_up_i(1),pt_up_i(2),pt_up_i(3),'o','MarkerSize',7,'MarkerFaceColor','b');
     %plot3(pt_down_i(1),pt_down_i(2),pt_down_i(3),'o','MarkerSize',7,'MarkerFaceColor','b');
     n = planes(i,1:3);
-    d = planes(i,4)-0.2;
-    %h1 = drawPlan(n',d,'b');
+    d = planes(i,4);
+    h1 = drawPlan(n',d,'b');
     n = planes(mod(i,4)+1,1:3);
-    d = planes(mod(i,4)+1,4)-0.2;
-    %h2 = drawPlan(n',d,'b');
+    d = planes(mod(i,4)+1,4);
+    h2 = drawPlan(n',d,'b');
     plot3(pt_up_j(1),pt_up_j(2),pt_up_j(3),'o','MarkerSize',8,'MarkerFaceColor','b');
     plot3(pt_down_j(1),pt_down_j(2),pt_down_j(3),'o','MarkerSize',8,'MarkerFaceColor','b');
     quiver3(pt_up_i(1),pt_up_i(2),pt_up_i(3),u_up(1),u_up(2),u_up(3),'g');
     quiver3(pt_down_i(1),pt_down_i(2),pt_down_i(3),u_down(1),u_down(2),u_down(3),'g');
-    %delete([h1,h2]);
+    delete([h1,h2]);
     %text(pt_i(1),pt_i(2),pt_i(3),num2str(i), 'VerticalAlignment','top','HorizontalAlignment','left');
 end
 %exportgraphics(gca,strcat('proj_points_2','.png'),'Resolution',500);
