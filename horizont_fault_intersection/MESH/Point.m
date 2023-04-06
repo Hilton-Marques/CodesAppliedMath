@@ -1,21 +1,19 @@
 classdef Point < handle
     properties
-        coord
-        id
-        elements = Face.empty;
-        idTemp;
-        u = [];
-        bd = false;
-        markTemp = false;
-        closeElements = Face.empty;
-        star = Point.empty;
-        hedStar = Hed.empty;
+        m_coord
+        m_id        
+        m_hedStart = Hed.empty;
     end
     methods
         function this = Point(coord,id)
             if nargin == 2
-                this.coord = coord;
-                this.id = id;
+                this.m_coord = coord;
+                this.m_id = id;
+            end
+        end
+        function setHedStart(this, hed)
+            if (isempty(this.m_hedStart))
+                this.m_hedStart = hed;
             end
         end
         function out = getSolidAngle(this)

@@ -1,35 +1,27 @@
 classdef Hed < handle
     properties
-        inc;
-        id;
-        elId;
-        edgeId = -1;
-        heNext;
+        m_inc;
+        m_id;
+        m_face
+        m_edge
+        m_heNext;
+        m_p1;
+        m_p2;
     end
     methods
-        function this = Hed(inc,id,elId,heNext,edgeId)
-            if nargin == 5
-                this.inc = inc;
-                this.id = id;
-                this.edgeId = edgeId;
-                this.heNext = heNext;
-                this.elId = elId;
-            elseif nargin == 3
-                this.inc = inc;
-                this.id = id;
-                this.edgeId = elId;
-            elseif nargin == 4
-                this.inc = inc;
-                this.id = id;
-                this.elId = elId;
-                this.heNext = heNext;
-            end
+        function this = Hed(inc,id,p1,p2)
+            this.m_inc = inc;
+            this.m_id = id;
+            this.m_p1 = p1;
+            this.m_p2 = p2;
         end
-        function flip(this)
-            this.inc = [ this.inc(2), this.inc(1) ] ;
+        function setEdge(this, edge)
+           this.m_edge = edge; 
         end
-        function plot(this,heds, points, color)
-            
+        function setFace(this, face)
+            this.m_face = face;
+        end
+        function plot(this,heds, points, color)            
             p0  = points(this.inc(1)).coord;
             p1  = points(this.inc(2)).coord;
             u = p1 - p0;    

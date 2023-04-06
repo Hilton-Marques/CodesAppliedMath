@@ -1,18 +1,15 @@
 classdef Face < handle
     properties
-        hedInc;
-        pointsInc;
-        heds = Hed.empty;
+        m_hed = Halfedge.empty        
+        m_id;
         adjacentFaces;
-        id;
         adjacentElementsEdges = Face.empty;
     end
     methods
-        function this = Face(hedInc,heds)
+        function this = Face(hed, id)
             if nargin > 0
-                this.hedInc = hedInc;
-                this.getIndcPoints(heds);
-                this.id = heds(hedInc).elId;                
+                this.m_hed = hed;
+                this.m_id = id;
             end
         end
         function getIndcPoints(this,heds)

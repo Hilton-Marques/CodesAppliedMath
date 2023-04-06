@@ -1,13 +1,8 @@
 classdef Edge < handle
-    properties
-        isSplited = false;
-        isSplitedToRefine = false;
+    properties        
         hed1 = Hed.empty;
         hed2 = Hed.empty
-        childrenId = zeros(1,2);
         id;
-        mid;
-        pRefined; %new points to refine
     end
     methods
         function this = Edge(hed1,hed2,id)
@@ -23,18 +18,6 @@ classdef Edge < handle
             else
                 out = this.hed1;
             end
-        end
-        function leafInsideNodes = getLeafInsideNodes(this,leafInsideNodes,edges)
-            if (this.isSplited)
-                leafInsideNodes(end+1) = this.mid;
-                this.mid.markTemp = true;
-                for i = 1:2
-                    edgeChild = edges(this.childrenId(i));
-                    leafInsideNodes = edgeChild.getLeafInsideNodes(leafInsideNodes,edges);
-                end
-            else
-                return;
-            end            
         end
         function plot(this,solid)
             p0  = solid.points(this.hed1.inc(1)).coord;

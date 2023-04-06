@@ -97,22 +97,22 @@ function [points,heds,edges,elements] = buildMesh(vertices,faces)
      next = [nHed+2,nHed+3,nHed+1];
      for j = 1:3
          nHed = length(heds);
-         hedj = Hed([faces(i,j),faces(i,mod(j,3)+1)],nHed+1,i,next(j));
-         heds(end+1) = hedj;
-         pt = points(faces(i,j));
-         ptStar = points(faces(i,mod(j,3)+1));
-         pt.star(end+1) = ptStar;
-         pt.hedStar(end+1) = hedj;
+         inc = [faces(i,j),faces(i,mod(j,3)+1)];
+         hed = Hed(inc, nHed+1);
+         heds(end+1) = hed;
+         pt = points(inc(1));
+         pt.setHedStart(hed);         
      end
+     elements(i) = Triangle(hed, vertices, coords);
      hedInc = nHed - 1; 
      vertices = points(faces(i,:));
-     elements(i) = Triangle(hedInc, heds, vertices);        
  end
  for pt = points
      for i = 1:length(pt.star)
          pti = pt.star(i);
          hedi = pt.hedStar(i);
          if (hedi.edgeId == -1)
+             is_edge_with_two_halfs = false;
              for j = 1:length(pti.star)
                  ptj = pti.star(j);
                  hedj = pti.hedStar(j);
@@ -121,7 +121,14 @@ function [points,heds,edges,elements] = buildMesh(vertices,faces)
                      edges(end+1) = Edge(hedi,hedj, nEdge + 1);
                      hedi.edgeId = nEdge+1;
                      hedj.edgeId = nEdge+1;
+                     is_edge_with_two_halfs = true;
+                     break;
                  end
+             end
+             if (~is_edge_with_two_halfs)
+                 nEdge = length(edges);
+                 edges(end+1) = Edge(hedi, nEdge + 1);
+                 hedi.edgeId = nEdge+1;
              end
          end
      end
