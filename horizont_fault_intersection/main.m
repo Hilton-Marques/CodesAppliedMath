@@ -1,10 +1,36 @@
 clc;
 clear;
 close all;
-
+rng('default'); %for colors
 addpath(genpath("./"));
+addpath("../../my_libs/Geresim_Scene/");
 
 [vertices, faces] = read_vtk_file("meshes/EMB_COMPLETO_160_145_ts.vtk");
+tic
+Solver(vertices,faces);
+toc
+keyboard;
+m = ManifoldSurfaceMesh(faces);
+
+G = meshGraph(vertices,faces);
+figure
+hold on
+axis tight
+view(-8,71)
+trisurf(faces,vertices(:,1),vertices(:,2),vertices(:,3),'EdgeAlpha',0.6,'FaceColor',[0.2588 0.5216 0.9569],'FaceAlpha',0.7)
+
+patches = ManifPatches(G, vertices);
+%DFS(G);
+
+% Open the output file for writing
+fileID = fopen('output.obj', 'w');
+
+% Write the vertex data to the file
+fprintf(fileID, 'v %f %f %f\n', vertices');
+
+% Write the face data to the file
+fprintf(fileID, 'f %d %d %d\n', faces');
+fclose(fileID);
 [points,heds,edges,elements] = buildMesh(vertices,faces);
 
 function [vertices, faces] = read_vtk_file(filename)
@@ -133,4 +159,28 @@ function [points,heds,edges,elements] = buildMesh(vertices,faces)
          end
      end
  end
+end
+
+function G = meshGraph(vertices,faces)
+nv = size(vertices,1);
+nf = size(faces,1);
+e1 = faces(:,1:2);
+e2 = faces(:,2:3);
+e3 = faces(:,[3,1]);
+G = zeros(nv,nv);
+for i = 1:nf
+    G(e1(i,1),e1(i,2)) = 1;
+    G(e1(i,2),e1(i,1)) = 1;
+
+    G(e2(i,1),e2(i,2)) = 1;
+    G(e2(i,2),e2(i,1)) = 1;
+
+    G(e3(i,1),e3(i,2)) = 1;
+    G(e3(i,2),e3(i,1)) = 1;
+
+end
+
+%spy(G)
+G = sparse(G);
+
 end

@@ -4,7 +4,7 @@ classdef ManifPatches < handle
         m_prev
         m_pos
         m_mask_vertices
-        m_list
+        m_G
         m_parent
         m_p;
         m_vertices;
@@ -13,73 +13,74 @@ classdef ManifPatches < handle
         m_halfedges;
         m_meshes Mesh;
         m_count_cc = 0;
+        m_poses
     end
     methods
-        function this = ManifPatches(list, vertices, faces, edges, halfedges)
-            figure
-            hold on
-            n = length(list);
-            this.m_list = list;
-            this.Plot();            
-            this.m_vertices = vertices;
-            this.m_faces = faces;
-            this.m_edges = edges;
-            this.m_halfedges = halfedges;
+        function this = ManifPatches(G, poses)
+%             figure
+             hold on
+%             this.m_vertices = vertices;
+%             this.m_faces = faces;
+%             this.m_edges = edges;
+%             this.m_halfedges = halfedges;
+%           
+            n = size(G,1);
+            this.m_G = G;
+            this.m_poses = poses;
             this.m_prev = zeros(n,1);
             this.m_pos = zeros(n,1);
             this.m_mask_vertices = false(n,1);
-            n_edges = size(edges,2);
-            n_faces = size(faces,2);
-            this.m_mask_edges = false(n_edges,1);
-            this.m_mask_faces = false(n_faces,1);
+            
+            
             this.m_parent = zeros(n,1);
             for i = 1:n
-                if ~this.m_mask(i)
-                    m = Mesh();  
+                if ~this.m_mask_vertices(i)
+                    %m = Mesh();  
                     this.m_count_cc = this.m_count_cc + 1;
-                    this.m_meshes(end+1) = m;
-                    this.Visit(i);                    
+                    %this.m_meshes(end+1) = m;
+                    this.Visit(i,rand(1,3));                    
                 end
             end
         end
-        function Visit(this, u)
-            mesh = this.m_meshes(this.m_count_cc);
-            vertex = this.m_vertices(u);
-            mesh.addVertex(vertex);
+        function Visit(this, u,color)
+            %mesh = this.m_meshes(this.m_count_cc);
+            %vertex = this.m_vertices(u);
+            %mesh.addVertex(vertex);
             
             this.m_time = this.m_time + 1;
             this.m_prev(u) = this.m_time;
             this.m_mask_vertices(u) = true;
-            highlight(this.m_p, u, 'NodeColor', 'red');
-            this.Label(u,this.m_time,'bottom');
+
+            plot3(this.m_poses(u,1),this.m_poses(u,2),this.m_poses(u,3),'o','markerfacecolor',color,'markersize',10);
             
-            edges = this.m_list{u};
+            
+            edges = find(this.m_G(u,:));
             for v = edges
-                edge = this.m_edges(v);                 
-                if ~this.m_edges(edge.id)
-                    mesh.addEdge(edge);
-                    hed_1 = edge.getHed();
-                    mesh.addHalfEdge(hed_1);
-                    if (hed.hasTwin())
-                        hed_2 = edge.getTwin();
-                        mesh.addHalfEdge(hed_2);
-                    end
-                    face = hed_1.getFace();
-                    if ~this.m_faces(face.id)
-                        mesh.addFace(face);
-                        this.m_faces(face.id) = true;
-                    end
-                    this.m_edges(edge.id) = true;
-                end                
+% Mesh update
+%                 edge = this.m_edges(v);                 
+%                 if ~this.m_edges(edge.id)
+%                     mesh.addEdge(edge);
+%                     hed_1 = edge.getHed();
+%                     mesh.addHalfEdge(hed_1);
+%                     if (hed.hasTwin())
+%                         hed_2 = edge.getTwin();
+%                         mesh.addHalfEdge(hed_2);
+%                     end
+%                     face = hed_1.getFace();
+%                     if ~this.m_faces(face.id)
+%                         mesh.addFace(face);
+%                         this.m_faces(face.id) = true;
+%                     end
+%                     this.m_edges(edge.id) = true;
+%                 end                
                 if ~this.m_mask_vertices(v)
                     this.m_parent(v) = u;
-                    this.Visit(v);
+                    this.Visit(v,color);
                 end
             end
             this.m_time = this.m_time + 1;
             this.m_pos(u) = this.m_time;
-            this.Label(u,this.m_time,'top');
-            highlight(this.m_p, u, 'NodeColor', 'black');
+
         end
         function Plot(this)
             n = length(this.m_list);

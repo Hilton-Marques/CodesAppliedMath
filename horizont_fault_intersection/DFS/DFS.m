@@ -3,17 +3,17 @@ classdef DFS < handle
         m_time = 0
         m_prev
         m_pos
-        m_mask
+        m_G
         m_list
         m_parent
         m_p;
+        m_mask
     end
     methods
-        function this = DFS(list)
+        function this = DFS(G)
             figure
             hold on
-            n = length(list);
-            this.m_list = list;
+            this.m_G = G;
             this.Plot();            
             this.m_prev = zeros(n,1);
             this.m_pos = zeros(n,1);
@@ -58,13 +58,7 @@ classdef DFS < handle
             this.Label(u,this.m_time,'top');
         end
         function Plot(this)
-            n = length(this.m_list);
-            G = zeros(n,n);
-            for i = 1:n
-                for j = this.m_list{i}
-                    G(i,j) = 1.0;
-                end
-            end
+            G = this.m_G;
             if issymmetric(G)
                 this.m_p = plot(graph(G),'NodeColor','green','NodeLabel',[],'LineWidth',3.0);
             else

@@ -26,4 +26,5 @@ classdef Mesh < handle
             this.m_face(end+1) = face;
         end
     end
+    
 end
