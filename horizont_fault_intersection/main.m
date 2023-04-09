@@ -4,35 +4,54 @@ close all;
 rng('default'); %for colors
 addpath(genpath("./"));
 addpath("../../my_libs/Geresim_Scene/");
+addpath("../../my_libs/cgeom/");
 
-[vertices, faces] = read_vtk_file("meshes/EMB_COMPLETO_160_145_ts.vtk");
+[vertices_horizon, faces_horizon] = read_vtk_file("meshes/EMB_COMPLETO_160_145_ts.vtk");
+[vertices_fault, faces_fault] = read_vtk_file("meshes/SM_study_FALHA_2_ts_ts.vtk");
+
+%vtk2obj("meshes/SM_study_FALHA_2_ts_ts.vtk");
+
+horizon = Horizon(vertices_horizon, faces_horizon);
+fault = Fault(vertices_fault, faces_fault);
+
 tic
-Solver(vertices,faces);
+Solver(horizon,fault);
 toc
 keyboard;
+
 m = ManifoldSurfaceMesh(faces);
 
-G = meshGraph(vertices,faces);
+G = meshGraph(vertices_horizon,faces);
 figure
 hold on
 axis tight
 view(-8,71)
-trisurf(faces,vertices(:,1),vertices(:,2),vertices(:,3),'EdgeAlpha',0.6,'FaceColor',[0.2588 0.5216 0.9569],'FaceAlpha',0.7)
+trisurf(faces,vertices_horizon(:,1),vertices_horizon(:,2),vertices_horizon(:,3),'EdgeAlpha',0.6,'FaceColor',[0.2588 0.5216 0.9569],'FaceAlpha',0.7)
 
-patches = ManifPatches(G, vertices);
+patches = ManifPatches(G, vertices_horizon);
 %DFS(G);
 
-% Open the output file for writing
-fileID = fopen('output.obj', 'w');
 
-% Write the vertex data to the file
-fprintf(fileID, 'v %f %f %f\n', vertices');
 
-% Write the face data to the file
-fprintf(fileID, 'f %d %d %d\n', faces');
-fclose(fileID);
-[points,heds,edges,elements] = buildMesh(vertices,faces);
+[points,heds,edges,elements] = buildMesh(vertices_horizon,faces);
+function vtk2obj(filename)
+  [vertices, faces] = read_vtk_file(filename);
 
+  new_filename = split(filename, '.') ;
+  new_filename = strcat(new_filename{1} , '.obj');
+
+  % Open the output file for writing
+  fileID = fopen(new_filename, 'w');
+
+  % Write the vertex data to the file
+  fprintf(fileID, 'v %f %f %f\n', vertices');
+
+  % Write the face data to the file
+  fprintf(fileID, 'f %d %d %d\n', faces');
+  fclose(fileID);
+
+
+end
 function [vertices, faces] = read_vtk_file(filename)
 % READ_VTK_FILE reads a .vtk file and returns the vertices and faces.
 % Inputs:

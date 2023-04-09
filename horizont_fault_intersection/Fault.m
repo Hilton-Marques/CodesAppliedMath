@@ -4,17 +4,31 @@ classdef Fault < handle
         m_faces
         m_mesh
         m_geom
+        m_mesh_geodesic
+        m_algorithm_geodesic
     end
     methods
         function this = Fault(fault_vertices, fault_faces)
             this.m_vertices = fault_vertices;
             this.m_faces = fault_faces;
-            this.m_mesh = ManifoldSurfaceMesh(horizon_faces);
+            this.m_mesh = ManifoldSurfaceMesh(fault_faces);
             this.m_geom = Geometry(fault_vertices);
         end
-        function showMesh(this, color)
-            trisurf(this.m_faces, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
-                'FaceAlpha',0.7,'EdgeColor','none','FaceColor', color);
+        function showMesh(this, color, faces_ids)
+            if nargin == 2
+                faces_ids = 1:this.m_mesh.m_nfaces;
+            end
+            k = this.m_faces(faces_ids,:);
+%             vertices_ids = unique(k(:));
+%             vertices = this.m_geom.inputVertexPosition(vertices_ids);
+%             trisurf(k, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
+%                 'FaceAlpha',0.7,'EdgeColor','none','FaceColor', color);
+             trisurf(k, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
+                'FaceAlpha',0.7,'FaceColor', color,'EdgeAlpha',1.0);
+        end
+        function initGeodesicPath(this)
+             this.m_mesh_geodesic = geodesic_new_mesh(vertices,faces);
+             this.m_algorithm_geodesic = geodesic_new_algorithm(mesh, 'exact'); 
         end
 
         function showBoundaryLoops(this)
@@ -56,6 +70,49 @@ classdef Fault < handle
 
             line([v0_coords(1),v1_coords(1)],[v0_coords(2),v1_coords(2)],...
                 [v0_coords(3),v1_coords(3)],'linewidth',5,'color',color);
+        end
+        function p = project(this, face_id, edge)
+            first_hed = this.m_mesh.m_fHalfEdgeArr(face_id);
+            v0 = this.m_mesh.m_heVertexArr(first_hed);
+            next_hed = this.m_mesh.m_heNextArr(first_hed);
+            v1 = this.m_mesh.m_heVertexArr(next_hed);
+            next_hed = this.m_mesh.m_heNextArr(next_hed);
+            v2 = this.m_mesh.m_heVertexArr(next_hed);
+            tri_coords = this.m_geom.inputVertexPosition([v0,v1,v2]);
+            p = cgeom.project(tri_coords, edge);
+        end
+        function p = closestPointToFace(this, face_id, P)
+            first_hed = this.m_mesh.m_fHalfEdgeArr(face_id);
+            v0 = this.m_mesh.m_heVertexArr(first_hed);
+            next_hed = this.m_mesh.m_heNextArr(first_hed);
+            v1 = this.m_mesh.m_heVertexArr(next_hed);
+            next_hed = this.m_mesh.m_heNextArr(next_hed);
+            v2 = this.m_mesh.m_heVertexArr(next_hed);
+            tri_coords = this.m_geom.inputVertexPosition([v0,v1,v2]);
+            p = cgeom.closestPointToTriangle(tri_coords, P);
+        end
+        function [is_intersecting, lambda, triangle_id] = rayIntersection(this,o,d,search_faces)
+            %for each face, check ray-triangle intersection
+            is_intersecting = false;            
+            triangle_id = ManifoldSurfaceMesh.INVALID_IND;
+            lambda = realmax;
+            for i = search_faces
+                first_hed = this.m_mesh.m_fHalfEdgeArr(i);
+                v0 = this.m_mesh.m_heVertexArr(first_hed);
+                next_hed = this.m_mesh.m_heNextArr(first_hed);
+                v1 = this.m_mesh.m_heVertexArr(next_hed);
+                next_hed = this.m_mesh.m_heNextArr(next_hed);
+                v2 = this.m_mesh.m_heVertexArr(next_hed);
+                tri_coords = this.m_geom.inputVertexPosition([v0,v1,v2]);
+                new_lambda = cgeom.rayTriangleIntersection(o,d,tri_coords);
+                if new_lambda < lambda
+                    lambda = new_lambda;
+                    triangle_id = i;
+                end
+            end
+            if lambda < realmax
+                is_intersecting = true;
+            end
         end
 
     end

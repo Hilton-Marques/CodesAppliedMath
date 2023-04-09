@@ -4,6 +4,7 @@ classdef Horizon < handle
         m_faces
         m_mesh
         m_geom
+        m_boundaries
     end
     methods
         function this = Horizon(horizon_vertices, horizon_faces)
@@ -11,10 +12,13 @@ classdef Horizon < handle
             this.m_faces = horizon_faces;
             this.m_mesh = ManifoldSurfaceMesh(horizon_faces);
             this.m_geom = Geometry(horizon_vertices);
+            this.initBoundaryLoops();
         end
         function showMesh(this, color)
-            trisurf(this.m_faces, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
-                'FaceAlpha',0.7,'EdgeColor','none','FaceColor', color);
+            %trisurf(this.m_faces, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
+             %   'FaceAlpha',0.7,'EdgeColor','none','FaceColor', color,'EdgeAlpha',0.5);
+             trisurf(this.m_faces, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
+                'FaceAlpha',0.7,'FaceColor', color,'EdgeAlpha',1.0);
         end
 
         function showBoundaryLoops(this)
@@ -45,6 +49,37 @@ classdef Horizon < handle
                     %                     end
                     %this.focusCamera(vertices_id);
                 end
+            end
+        end
+
+        function initBoundaryLoops(this)
+            n_loops = this.m_mesh.m_nboundary_loops;
+            colors = rand(n_loops,3);
+
+            if (n_loops > 0)
+                boundaries = cell(n_loops,1);
+                %the boundary loops are at the end of faces array
+                first_loop = this.m_mesh.m_nfaces + 1;
+                count = 1;
+                for id_loop = first_loop:(first_loop + n_loops - 1)
+                    first_hed = this.m_mesh.m_fHalfEdgeArr(id_loop);
+                    prev_hed = first_hed;
+                    next_hed = ManifoldSurfaceMesh.INVALID_IND;
+                    %save vertices for bounding box
+                    vertices_id = [];
+                    color = colors(id_loop - this.m_mesh.m_nfaces, :);
+                    while (next_hed ~= first_hed)
+                        next_hed = this.m_mesh.m_heNextArr(prev_hed);
+                        vertices_id = [vertices_id,...
+                            this.m_mesh.m_heVertexArr(prev_hed)];
+                        % plot edge and vertices                        
+                        prev_hed = next_hed;
+                    end
+                    boundaries{count} = vertices_id;
+                    count = count + 1;                    
+                end
+                this.m_boundaries = boundaries;
+
             end
         end
         function plotEdge(this, hed0, hed1, color)

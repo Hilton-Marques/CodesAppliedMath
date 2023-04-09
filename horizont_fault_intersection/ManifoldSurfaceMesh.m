@@ -80,7 +80,7 @@ classdef ManifoldSurfaceMesh < handle
 
                     if (id_face_hed == 1)
                         %we just need one pointer for the face
-                        this.m_fHalfEdgeArr(id_face_hed) = hed_id; 
+                        this.m_fHalfEdgeArr(id_face) = hed_id; 
                         %save first hed to update its next
                         first_hed_id = hed_id;
                     else
@@ -135,18 +135,22 @@ classdef ManifoldSurfaceMesh < handle
                     %Init next operations for boundary loops
                     prev_hed = curr_hed;
                     curr_hed = this.getTwin(this.m_heNextArr(curr_hed_twin));
+                    inter_loop = 0;
                     while (this.m_heFaceArr(curr_hed) ~= ManifoldSurfaceMesh.INVALID_IND)                        
                         curr_hed = this.getTwin(this.m_heNextArr(curr_hed));
                         %check if is already the end of the loop
                         if (curr_hed == hed_id)
                             break;
                         end
+                        inter_loop = inter_loop + 1;
+                        assert (inter_loop < this.m_nhed_count, 'boundary infinite loop');
                     end
                     this.m_heNextArr(curr_hed) = prev_hed;
                     %check if is already the end of the loop
                     if (curr_hed == hed_id)
                         break;
                     end
+                    assert (count_heds < this.m_nhed_count, 'boundary infinite loop');
                 end
                 count_heds;
             end
@@ -155,6 +159,69 @@ classdef ManifoldSurfaceMesh < handle
             this.m_nhed_count = this.m_nhed_count + 2;
             this.m_nedge_count = this.m_nedge_count + 1;
             res = uint64(this.m_nhed_count - 1);
+        end
+        function adjacent_faces = get_adjacentFaces(this,face_id,plotter)
+            first_hed = this.m_fHalfEdgeArr(face_id);
+            v0 = this.m_heVertexArr(first_hed);
+            next_hed = this.m_heNextArr(first_hed);
+            v1 = this.m_heVertexArr(next_hed);
+            next_hed = this.m_heNextArr(next_hed);
+            v2 = this.m_heVertexArr(next_hed);
+            star_0 = this.getStar(v0);
+            star_1 = this.getStar(v1);
+            %plotter.showMesh('blue',star_1);
+
+            star_2 = this.getStar(v2);
+            adjacent_faces = unique([star_0, star_1, star_2]);
+        end
+        function star = getStar(this, node_id)
+            first_hed = this.m_vHalfEdgeArr(node_id);            
+            star = this.m_heFaceArr(first_hed);
+            curr_hed = this.getTwin(this.m_heNextArr(this.m_heNextArr(first_hed)));
+            while (curr_hed ~= first_hed)
+                face_id = this.m_heFaceArr(curr_hed);
+                if face_id > this.m_nfaces %boundary vertex
+                    break;
+                end
+                star = [star, this.m_heFaceArr(curr_hed)];
+                curr_hed = this.getTwin(this.m_heNextArr(this.m_heNextArr(curr_hed)));
+            end
+        end
+        function [bool, v_id] = isJoinedByVertex(this,tri_id_1, tri_id_2)
+            bool = false;
+            face_degree = 3;
+            vetices_id = uint64(zeros(1,face_degree));
+            hed = this.m_fHalfEdgeArr(tri_id_1);
+            for i = 1:face_degree
+                v_id = this.m_heVertexArr(hed);
+                vertices_id(i) = v_id;
+                hed = this.m_heNextArr(hed);
+            end
+            hed = this.m_fHalfEdgeArr(tri_id_2);
+            for i = 1:face_degree
+                v_id = this.m_heVertexArr(hed);
+                if ismember(v_id , vertices_id)
+                    bool = true;
+                    break;
+                end
+                hed = this.m_heNextArr(hed);
+            end
+        end
+        function [bool, inc] = isJoinedByEdge(this,tri_id_1, tri_id_2)
+            bool = false;
+            inc = [-1,-1];
+            face_degree = 3;
+            hed = this.m_fHalfEdgeArr(tri_id_1);            
+            for i = 1:face_degree
+                twin = this.getTwin(hed);
+                face_id = this.m_heFaceArr(twin);
+                if (face_id == tri_id_2)
+                    bool = true;
+                    inc = [this.m_heVertexArr(hed), this.m_heVertexArr(twin)];
+                    break;
+                end
+                hed = this.m_heNextArr(hed);
+            end
         end
     end
     methods (Static)
@@ -171,7 +238,7 @@ classdef ManifoldSurfaceMesh < handle
         function key1_char =  key_enc(key1)
             [~,n] = size(key1);
             assert(n == 2);
-            key1_char = [dec2hex(key1(1)),dec2hex(key1(2))];
+            key1_char = ['0x',dec2hex(key1(1)),'0x',dec2hex(key1(2))];
         end
         function key1_dbl =  key_dec(key1_char)
             n = numel(key1_char);
