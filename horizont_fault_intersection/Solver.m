@@ -14,7 +14,7 @@ classdef Solver < Drawer
             
             this.m_horizons = horizons;
             this.m_faults = faults;
-            this.m_faults.initGeodesicPath();
+            %this.m_faults.initGeodesicPath();
             
         
             for i = 1:this.m_horizons.m_mesh.m_nboundary_loops
@@ -35,7 +35,7 @@ classdef Solver < Drawer
 %             this.save();
             
 %% Take 2
-%             this.m_horizons.showBoundaryLoops();
+             this.m_horizons.showBoundaryLoops();
 %             for i = 1:90
 %                 this.update();
 %             end
@@ -62,7 +62,7 @@ classdef Solver < Drawer
                     next_hed = ManifoldSurfaceMesh.INVALID_IND; 
                     search_faces = 1:this.m_faults.m_mesh.m_nfaces;
                     count = 0;
-   
+                    initialized = false;
                     %this.focusCamera(this.m_horizons.m_boundaries{id_loop - this.m_horizons.m_mesh.m_nfaces});
                     %Take 6
 %                     this.focusCamera(this.m_faults, 1:this.m_faults.m_mesh.m_nvertices);
@@ -105,41 +105,31 @@ classdef Solver < Drawer
                                 'interpreter','latex','FontSize',16,'VerticalAlignment','bottom');
                             h = [h,h_i];
                         end
-                        this.update(-1);
+                        if ~initialized
+                            this.update(1);
+                        else
+                            this.get();
+                        end
                         delete(h);
-
-%                         if is_intersecting
-%                             %k = lambda - 1;
-%                             %p = coords_o + lambda*d;
-%                             %plot3(p(1),p(2),p(3),'o','markersize',5,'markerfacecolor','green');
-%                             %this.m_faults.closestPointToFace(triangle_id, p);
-%                             %this.m_faults.showMesh('cyan',triangle_id);
-% 
-%                             %h = [h,plot3(p(1),p(2),p(3),'o','markersize',5,'markerfacecolor','green')];
-%                         else
-%                            delete(h);
-%                         end
+                        prev_hed = next_hed;
                         if (is_intersecting && lambda < this.m_thershold)
                             if count == 0
-                                this.focusCamera(this.m_faults, 1:this.m_faults.m_mesh.m_nvertices);
-                                for i = 1:n_loops
-                                    if (i == 6)
-                                        continue;
-                                    end
-                                    delete(this.m_boundary_handles(i));
-                                end
-                                view(1,43);
-                                view(84,52);
-                                this.get();
+                                initialized = true;
+%                                 this.focusCamera(this.m_faults, 1:this.m_faults.m_mesh.m_nvertices);
+%                                 for i = 1:n_loops
+%                                     if (i == 6)
+%                                         continue;
+%                                     end
+%                                     delete(this.m_boundary_handles(i));
+%                                 end
+%                                 view(1,43);
+%                                 view(84,52);
+%                                 this.get();
                             end
                             p = coords_o + lambda*d;
-                            plot3(p(:,1), p(:,2), p(:,3),'o','MarkerSize',5,'MarkerFaceColor','green','color','green');
-                            count = count + 1;
-                            break;
-                            
+                            plot3(p(:,1), p(:,2), p(:,3),'o','MarkerSize',4,'MarkerFaceColor','green','color','green');                            
                             lambdas = [lambdas, lambda];
-                            p = coords_o + lambda*d;
-                            if count > 0                                 
+                            if count < 0                                 
                                 if (triangle_id ~= tri_id_prev)
                                     %create geodesic path
                                     source_point{1} = geodesic_create_surface_point('face',tri_id_prev,p_prev);
@@ -160,10 +150,9 @@ classdef Solver < Drawer
                             tri_id_prev = triangle_id;
                             count = count + 1;
                         end
-                        prev_hed = next_hed;
                     end
                     if ~isempty(boundary_projection)
-                        this.save('take_5.gif',0.1);
+                        this.save('take_5.gif',0.5);
 
                         n = size(boundary_projection,1);
                         for i = 1:n-1
