@@ -14,7 +14,7 @@ classdef Solver < Drawer
             
             this.m_horizons = horizons;
             this.m_faults = faults;
-            %this.m_faults.initGeodesicPath();
+            this.m_faults.initGeodesicPath();
             
         
             for i = 1:this.m_horizons.m_mesh.m_nboundary_loops
@@ -35,7 +35,7 @@ classdef Solver < Drawer
 %             this.save();
             
 %% Take 2
-             this.m_horizons.showBoundaryLoops();
+             %this.m_horizons.showBoundaryLoops();
 %             for i = 1:90
 %                 this.update();
 %             end
@@ -76,6 +76,7 @@ classdef Solver < Drawer
 %                     view(84,52);
                     boundary_projection = [];     
                     lambdas = [];
+                    take_5 = false;
                     while (next_hed ~= first_hed)
                         next_hed = this.m_horizons.m_mesh.m_heNextArr(prev_hed);
                         v0 = this.m_horizons.m_mesh.m_heVertexArr(prev_hed);
@@ -91,45 +92,45 @@ classdef Solver < Drawer
                         d = coords_v0 - coords_o;
                         %d = d/norm(d);                        
                         [is_intersecting, lambda, triangle_id] = this.m_faults.rayIntersection(coords_o,d,search_faces);
-                        h_i = this.drawRay(coords_o,d);
-                        h = [h,h_i];
-                        text_pose = coords_o + 3*d;
-                        if lambda == realmax
-                            h_i = text(text_pose(1),text_pose(2),text_pose(3),...
-                                strcat('$\lambda',{''}, '=',{' '},'\infty$'),...
-                                'interpreter','latex','FontSize',16,'VerticalAlignment','bottom');
+                        if take_5
+                            h_i = this.drawRay(coords_o,d);
                             h = [h,h_i];
-                        else
-                            h_i = text(text_pose(1),text_pose(2),text_pose(3),...
-                                strcat('$\lambda',{''}, '=',{' '},num2str(lambda,2),'$'),...
-                                'interpreter','latex','FontSize',16,'VerticalAlignment','bottom');
-                            h = [h,h_i];
+                            text_pose = coords_o + 3*d;
+                            if lambda == realmax
+                                h_i = text(text_pose(1),text_pose(2),text_pose(3),...
+                                    strcat('$\lambda',{''}, '=',{' '},'\infty$'),...
+                                    'interpreter','latex','FontSize',16,'VerticalAlignment','bottom');
+                                h = [h,h_i];
+                            else
+                                h_i = text(text_pose(1),text_pose(2),text_pose(3),...
+                                    strcat('$\lambda',{''}, '=',{' '},num2str(lambda,2),'$'),...
+                                    'interpreter','latex','FontSize',16,'VerticalAlignment','bottom');
+                                h = [h,h_i];
+                            end
+                            if ~initialized
+                                this.update(1);
+                            else
+                                this.get();
+                            end
+                            delete(h);
                         end
-                        if ~initialized
-                            this.update(1);
-                        else
-                            this.get();
-                        end
-                        delete(h);
                         prev_hed = next_hed;
                         if (is_intersecting && lambda < this.m_thershold)
                             if count == 0
                                 initialized = true;
-%                                 this.focusCamera(this.m_faults, 1:this.m_faults.m_mesh.m_nvertices);
-%                                 for i = 1:n_loops
-%                                     if (i == 6)
-%                                         continue;
-%                                     end
-%                                     delete(this.m_boundary_handles(i));
-%                                 end
-%                                 view(1,43);
-%                                 view(84,52);
-%                                 this.get();
+                                this.focusCamera(this.m_faults, 1:this.m_faults.m_mesh.m_nvertices);
+                                for i = 1:n_loops
+                                    if (i == 6)
+                                        continue;
+                                    end
+                                    delete(this.m_boundary_handles(i));
+                                end
+                                view(84,52);
                             end
                             p = coords_o + lambda*d;
                             plot3(p(:,1), p(:,2), p(:,3),'o','MarkerSize',4,'MarkerFaceColor','green','color','green');                            
                             lambdas = [lambdas, lambda];
-                            if count < 0                                 
+                            if count > 0                                 
                                 if (triangle_id ~= tri_id_prev)
                                     %create geodesic path
                                     source_point{1} = geodesic_create_surface_point('face',tri_id_prev,p_prev);
@@ -138,8 +139,9 @@ classdef Solver < Drawer
                                     path = geodesic_trace_back(this.m_faults.m_algorithm_geodesic,...
                                         destinations);     %find a shortest path from source to destination
                                     [x,y,z] = extract_coordinates_from_path(path);
-                                    p_i = [x(2:end-1), y(2:end-1), z(2:end-1)]; %exclude source and dest points
-                                    plot3(p_i(:,1), p_i(:,2), p_i(:,3),'o','MarkerSize',5,'MarkerFaceColor','gree');
+                                    p_i = [flip(x(2:end-1)), flip(y(2:end-1)), flip(z(2:end-1))]; %exclude source and dest points
+                                    %p_i = flip(p_i);
+                                    plot3(p_i(:,1), p_i(:,2), p_i(:,3),'o','MarkerSize',5,'MarkerFaceColor','cyan','color','cyan');
                                     boundary_projection = [boundary_projection ; p_i];
                                 end
                             end     
@@ -152,17 +154,25 @@ classdef Solver < Drawer
                         end
                     end
                     if ~isempty(boundary_projection)
-                        this.save('take_5.gif',0.5);
-
+                        %Take 5 
+                        %this.save('take_5.gif',0.5);
+                        %Take 6
+                        %this.exportFrame('take_6');
+                        %Take 7
+                        %this.exportFrame('take 7');
+                        %Take 8
+                        this.get();
                         n = size(boundary_projection,1);
                         for i = 1:n-1
                             p_i = boundary_projection(i,:);
                             p_j = boundary_projection(i+1,:);
                             line([p_i(1,1), p_j(1,1)],[p_i(1,2), ...
-                                p_j(1,2)],[p_i(1,3), p_j(1,3)],'linewidth',4.5,'color','magenta');
-                            pause(0.01);
-                            drawnow;
+                                p_j(1,2)],[p_i(1,3), p_j(1,3)],'linewidth',2.5,'color','black');
+                            this.get();
+                            %pause(0.01);
+                            %drawnow;
                         end
+                        this.save('take_8.gif', 0.1);
                     end
                     boundaries_projections{end+1} = boundary_projection;
                 end
@@ -204,15 +214,20 @@ classdef Solver < Drawer
                 this.get();
             end
             %plot3(x,y,z,'LineWidth',2,'color','black');
-            this.save("take_4");
+            this.save("take_4",0.25);
             %this.exportFrame("take_4");
         end
         
 
-        function focusCamera(this,obj,  vertices_ids)
+        function focusCamera(this,obj,  vertices_ids, withWalkThrough)
+            if nargin == 3
+                withWalkThrough = false;
+            end
             coords = obj.m_geom.inputVertexPosition(vertices_ids);
             bb = this.getBB(coords);
-            this.walkTrough(bb);
+            if withWalkThrough
+                this.walkTrough(bb);
+            end
             this.setBB(bb);
 
             %this.walkTrough(this.m_parent_bb);
