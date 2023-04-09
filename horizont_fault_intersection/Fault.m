@@ -21,14 +21,14 @@ classdef Fault < handle
             k = this.m_faces(faces_ids,:);
 %             vertices_ids = unique(k(:));
 %             vertices = this.m_geom.inputVertexPosition(vertices_ids);
-%             trisurf(k, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
-%                 'FaceAlpha',0.7,'EdgeColor','none','FaceColor', color);
-             trisurf(k, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
-                'FaceAlpha',0.7,'FaceColor', color,'EdgeAlpha',1.0);
+            trisurf(k, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
+                'FaceAlpha',0.7,'EdgeColor','none','FaceColor', color);
+%              trisurf(k, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
+%                 'FaceAlpha',0.7,'FaceColor', color,'EdgeAlpha',0.0);
         end
         function initGeodesicPath(this)
-             this.m_mesh_geodesic = geodesic_new_mesh(vertices,faces);
-             this.m_algorithm_geodesic = geodesic_new_algorithm(mesh, 'exact'); 
+             this.m_mesh_geodesic = geodesic_new_mesh(this.m_vertices, this.m_faces);
+             this.m_algorithm_geodesic = geodesic_new_algorithm(this.m_mesh_geodesic, 'exact'); 
         end
 
         function showBoundaryLoops(this)
@@ -61,6 +61,7 @@ classdef Fault < handle
                 end
             end
         end
+
         function plotEdge(this, hed0, hed1, color)
             v0 = this.m_mesh.m_heVertexArr(hed0);
             v1 = this.m_mesh.m_heVertexArr(hed1);

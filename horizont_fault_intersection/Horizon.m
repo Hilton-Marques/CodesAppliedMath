@@ -14,11 +14,17 @@ classdef Horizon < handle
             this.m_geom = Geometry(horizon_vertices);
             this.initBoundaryLoops();
         end
-        function showMesh(this, color)
-            %trisurf(this.m_faces, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
-             %   'FaceAlpha',0.7,'EdgeColor','none','FaceColor', color,'EdgeAlpha',0.5);
-             trisurf(this.m_faces, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
-                'FaceAlpha',0.7,'FaceColor', color,'EdgeAlpha',1.0);
+        function h = showMesh(this, color, faces_ids)
+            if nargin == 2
+                faces_ids = 1:this.m_mesh.m_nfaces;
+            end
+            k = this.m_faces(faces_ids,:);
+%             vertices_ids = unique(k(:));
+%             vertices = this.m_geom.inputVertexPosition(vertices_ids);
+%             trisurf(k, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
+%                 'FaceAlpha',0.7,'EdgeColor','none','FaceColor', color);
+             h = trisurf(k, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
+                'FaceAlpha',0.7,'FaceColor', color,'EdgeAlpha',0.0);
         end
 
         function showBoundaryLoops(this)
@@ -90,7 +96,7 @@ classdef Horizon < handle
             v1_coords = this.m_geom.inputVertexPosition(v1);
 
             line([v0_coords(1),v1_coords(1)],[v0_coords(2),v1_coords(2)],...
-                [v0_coords(3),v1_coords(3)],'linewidth',5,'color',color);
+                [v0_coords(3),v1_coords(3)],'linewidth',3,'color',color);
         end
 
     end

@@ -187,6 +187,37 @@ classdef ManifoldSurfaceMesh < handle
                 curr_hed = this.getTwin(this.m_heNextArr(this.m_heNextArr(curr_hed)));
             end
         end
+        function star = getStarVertices(this, node_id)
+            first_hed = this.m_vHalfEdgeArr(node_id);            
+            next_hed = this.m_heNextArr(this.m_heNextArr(first_hed));
+            star = [];
+            curr_hed = this.getTwin(next_hed);
+            is_boundary = false;
+            while (curr_hed ~= first_hed)
+                face_id = this.m_heFaceArr(curr_hed);
+                star = [star, this.m_heVertexArr(next_hed)];
+                next_hed = this.m_heNextArr(this.m_heNextArr(curr_hed));
+                curr_hed = this.getTwin(next_hed);
+                if face_id > this.m_nfaces %boundary vertex
+                    is_boundary = true;
+                    break;
+                end
+            end
+            % check the other half
+            if (is_boundary)
+                new_hed = this.getTwin(first_hed);
+                star = [star, this.m_heVertexArr(new_hed)];
+                face_id = this.m_heFaceArr(new_hed);
+                next_hed = (this.m_heNextArr(new_hed));
+                curr_hed = this.getTwin(next_hed);
+                while (face_id < this.m_nfaces)
+                    face_id = this.m_heFaceArr(curr_hed);
+                    star = [star, this.m_heVertexArr(curr_hed)];
+                    next_hed = this.m_heNextArr(curr_hed);
+                    curr_hed = this.getTwin(next_hed);
+                end
+            end
+        end
         function [bool, v_id] = isJoinedByVertex(this,tri_id_1, tri_id_2)
             bool = false;
             face_degree = 3;
@@ -222,6 +253,29 @@ classdef ManifoldSurfaceMesh < handle
                 end
                 hed = this.m_heNextArr(hed);
             end
+        end
+        function faces_id = getFacesFromBoundary(this, boundary_id)
+            %Run BFS
+            first_hed = this.m_fHalfEdgeArr(boundary_id);
+            face_mark = ~logical(1:this.m_nfaces);
+            vertices_mark = ~logical(1:this.m_nvertices);
+            first_node = this.m_heVertexArr(first_hed);
+            Q = first_node;
+            while (~isempty(Q))
+                u = Q(1);
+                vertices_mark(u) = true;
+                Q(1) = [];
+                children = this.getStarVertices(u);
+                adjacent_faces = this.getStar(u);
+                face_mark(adjacent_faces) = true;
+                for child = children
+                    if (~vertices_mark(child))
+                        Q(end+1) = child;
+                    end
+                end
+            end
+            range = 1:this.m_nfaces;
+            faces_id = range(face_mark);            
         end
     end
     methods (Static)

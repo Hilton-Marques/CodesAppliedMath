@@ -1,6 +1,7 @@
 function [mesh, edge_to_vertex, edge_to_face] = geodesic_new_mesh(points, tri)
 
 global geodesic_library
+geodesic_library = 'geodesic_matlab_api';
 if ~libisloaded(geodesic_library)
     hfile = 'geodesic_matlab_api.h';
     %loadlibrary([geodesic_library '.dll'], hfile);
