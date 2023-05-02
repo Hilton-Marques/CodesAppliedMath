@@ -14,7 +14,7 @@ classdef Solver < Drawer
             
             this.m_horizons = horizons;
             this.m_faults = faults;
-            this.m_faults.initGeodesicPath();
+            %this.m_faults.initGeodesicPath();
             
         
             for i = 1:this.m_horizons.m_mesh.m_nboundary_loops
@@ -23,19 +23,19 @@ classdef Solver < Drawer
                 h = this.m_horizons.showMesh(this.m_blue, faces_id);
                 this.m_boundary_handles = [this.m_boundary_handles, h];
             end
+%             this.m_horizon_bb = this.getBB(this.m_horizons.m_geom.m_vertices);
+%             this.setBB(this.m_horizon_bb);
+%%Take 1
+            this.m_horizons.showMesh(this.m_blue);
             this.m_horizon_bb = this.getBB(this.m_horizons.m_geom.m_vertices);
             this.setBB(this.m_horizon_bb);
-%%Take 1
-            %this.m_horizons.showMesh(this.m_blue);
-            %this.m_horizon_bb = this.getBB(this.m_horizons.m_geom.m_vertices);
-            %this.setBB(this.m_horizon_bb);
 %             for i = 1:90
 %                 this.update();
 %             end
 %             this.save();
             
 %% Take 2
-             %this.m_horizons.showBoundaryLoops();
+             this.m_horizons.showBoundaryLoops();
 %             for i = 1:90
 %                 this.update();
 %             end
@@ -76,7 +76,7 @@ classdef Solver < Drawer
 %                     view(84,52);
                     boundary_projection = [];     
                     lambdas = [];
-                    take_5 = false;
+                    take_5 = true;
                     while (next_hed ~= first_hed)
                         next_hed = this.m_horizons.m_mesh.m_heNextArr(prev_hed);
                         v0 = this.m_horizons.m_mesh.m_heVertexArr(prev_hed);
@@ -116,7 +116,7 @@ classdef Solver < Drawer
                         end
                         prev_hed = next_hed;
                         if (is_intersecting && lambda < this.m_thershold)
-                            if count == 0
+                            if count < 0
                                 initialized = true;
                                 this.focusCamera(this.m_faults, 1:this.m_faults.m_mesh.m_nvertices);
                                 for i = 1:n_loops
@@ -130,7 +130,7 @@ classdef Solver < Drawer
                             p = coords_o + lambda*d;
                             plot3(p(:,1), p(:,2), p(:,3),'o','MarkerSize',4,'MarkerFaceColor','green','color','green');                            
                             lambdas = [lambdas, lambda];
-                            if count > 0                                 
+                            if count < 0                                 
                                 if (triangle_id ~= tri_id_prev)
                                     %create geodesic path
                                     source_point{1} = geodesic_create_surface_point('face',tri_id_prev,p_prev);
@@ -155,7 +155,7 @@ classdef Solver < Drawer
                     end
                     if ~isempty(boundary_projection)
                         %Take 5 
-                        %this.save('take_5.gif',0.5);
+                        this.save('take_5.gif',0.2);
                         %Take 6
                         %this.exportFrame('take_6');
                         %Take 7

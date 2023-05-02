@@ -3,8 +3,8 @@ clear;
 close all;
 rng('default'); %for colors
 addpath(genpath("./"));
-addpath("../../my_libs/Geresim_Scene/");
-addpath("../../my_libs/cgeom/");
+addpath("../my_libs/Geresim_Scene/");
+addpath("../my_libs/cgeom/");
 
 [vertices_horizon, faces_horizon] = read_vtk_file("meshes/EMB_COMPLETO_160_145_ts.vtk");
 [vertices_fault, faces_fault] = read_vtk_file("meshes/SM_study_FALHA_2_ts_ts.vtk");
@@ -79,11 +79,11 @@ header = fgetl(fid);
 
 % Find the keyword 'POINTS'
 points = fgetl(fid);
-strs = strsplit(points);
+strs = splitchar(points);
 str_to_compare = strs{1};
 while (~strcmp(str_to_compare, 'POINTS'))
     points = fgetl(fid);
-    strs = strsplit(points);
+    strs = splitchar(points);
     str_to_compare = strs{1};
 end
 
@@ -100,11 +100,11 @@ end
 
 % Find the keyword 'POLYGONS'
 cells = fgetl(fid);
-strs = strsplit(cells);
+strs = splitchar(cells);
 str_to_compare = strs{1};
 while (~strcmp(str_to_compare, 'CELLS'))
     cells = fgetl(fid);
-    strs = strsplit(cells);
+    strs = splitchar(cells);
     str_to_compare = strs{1};
 end
 
@@ -202,4 +202,33 @@ end
 %spy(G)
 G = sparse(G);
 
+end
+function strings = splitchar(char)
+%remove white spaces from begin
+n = size(char,2);
+strings = {};
+if n == 0
+    strings = {' '};
+    return;
+end
+del = ' ';
+i = 1;
+while (strcmp(char(i), del))
+    char(i) = [];
+end
+n = size(char,2);
+
+
+curr = '';
+for i = 1:n
+    if (strcmp(char(i), del))
+        strings{end+1} = curr;
+        curr = '';
+    else
+        curr(end +1 ) = char(i);
+    end
+end
+if (~isempty(curr))
+    strings{end+1} = curr;
+end
 end

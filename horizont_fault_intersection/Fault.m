@@ -24,7 +24,7 @@ classdef Fault < handle
 %             trisurf(k, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
 %                 'FaceAlpha',0.7,'EdgeColor','none','FaceColor', color);
              trisurf(k, this.m_vertices(:,1), this.m_vertices(:,2), this.m_vertices(:,3),...
-                'FaceAlpha',0.7,'FaceColor', color,'EdgeAlpha',1.0);
+                'FaceAlpha',0.7,'FaceColor', color,'EdgeAlpha',0.0);
         end
         function initGeodesicPath(this)
              this.m_mesh_geodesic = geodesic_new_mesh(this.m_vertices, this.m_faces);
