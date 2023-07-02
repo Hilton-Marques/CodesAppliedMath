@@ -89,6 +89,8 @@ classdef Drawer < handle
 
             %this.plotPlanes(this.m_cell_intersection_obj.m_planes_A(1:2,:),this.m_red);
             this.plotPlanes(this.m_cell_intersection_obj.m_planes_B(1:2,:),this.m_blue);
+%             this.plotPlanes(this.m_cell_intersection_obj.m_planes_B(3:4,:),this.m_red);
+%             this.plotPlanes(this.m_cell_intersection_obj.m_planes_B(5:6,:),this.m_blue);
 
             for i = 1:size(this.m_cell_intersection_obj.m_convex_A.pts,1)
                 pt_i = this.m_cell_intersection_obj.m_convex_A.pts(i,:);
@@ -276,6 +278,21 @@ classdef Drawer < handle
                 line([p2(1),p3(1)],[p2(2),p3(2)],[p2(3),p3(3)],'color','black');
                 line([p3(1),p0(1)],[p3(2),p0(2)],[p3(3),p0(3)],'color','black');
             end
+        end
+        function showFace(plan)
+            n = 20;
+             ksi = linspace(0,1,n);
+            eta = linspace(0,1,n);
+            [ksi,eta] = meshgrid(ksi,eta);
+            coords = plan;
+            p0 = coords(1,:)';
+            p1 = coords(2,:)';
+            p2 = coords(3,:)';
+            p3 = coords(4,:)';
+            x = p0(1) + ksi.*(p1(1) - p0(1)) + eta.*(p3(1) - p0(1)) + ksi.*eta.*( (p2(1)-p0(1)) - (p1(1)-p0(1)) - (p3(1) - p0(1)) );
+            y = p0(2) + ksi.*(p1(2) - p0(2)) + eta.*(p3(2) - p0(2)) + ksi.*eta.*((p2(2)-p0(2)) - (p1(2)-p0(2)) - (p3(2) - p0(2)));
+            z = p0(3) + ksi.*(p1(3) - p0(3)) + eta.*(p3(3) - p0(3)) + ksi.*eta.*((p2(3)-p0(3)) - (p1(3)-p0(3)) - (p3(3) - p0(3)));
+            surf(x,y,z,'FaceAlpha',0.7,'EdgeColor','none','FaceColor', 'green');
         end
 
         function plotPlanes(planes,color)

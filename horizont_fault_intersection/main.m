@@ -7,15 +7,32 @@ addpath("../my_libs/Geresim_Scene/");
 addpath("../my_libs/cgeom/");
 
 [vertices_horizon, faces_horizon] = read_vtk_file("meshes/EMB_COMPLETO_160_145_ts.vtk");
+target = [549567.9960937500, 8448006.4301757812, -11972.710937500000];
+
+id = find_id_by_coordinate(vertices_horizon, target);
+[vertices, edges] = read_segments_vtk_file("meshes/result_segments.vtk");
+%%To do BFS with weights
+%[vertices_horizon, faces_horizon] = read_vtk_file("meshes/result_triangles_extended.vtk");
+target = [530659,8534430,-5480.02];
+%find_id_by_coordinate(vertices_horizon, target);
+%[vertices_horizon, faces_horizon] = removeDuplicatePoints(vertices_horizon, faces_horizon);
 [vertices_fault, faces_fault] = read_vtk_file("meshes/SM_study_FALHA_2_ts_ts.vtk");
+
+%n_vertices = size(vertices_fault,1);
+
+%vertices = [vertices_fault; vertices_horizon];
+%faces = [faces_fault; faces_horizon + n_vertices ];
 
 %vtk2obj("meshes/SM_study_FALHA_2_ts_ts.vtk");
 
 horizon = Horizon(vertices_horizon, faces_horizon);
+data = readmatrix("meshes/new_triangles.txt") + 1;
+%horizon = Horizon(vertices, faces);
 fault = Fault(vertices_fault, faces_fault);
 
 tic
-Solver(horizon,fault);
+Solver(horizon,fault,data);
+
 toc
 keyboard;
 
@@ -34,6 +51,8 @@ patches = ManifPatches(G, vertices_horizon);
 
 
 [points,heds,edges,elements] = buildMesh(vertices_horizon,faces);
+
+
 function vtk2obj(filename)
   [vertices, faces] = read_vtk_file(filename);
 
@@ -51,6 +70,77 @@ function vtk2obj(filename)
   fclose(fileID);
 
 
+end
+function [vertices, faces] = read_segments_vtk_file(filename)
+% READ_VTK_FILE reads a .vtk file and returns the vertices and faces.
+% Inputs:
+%   filename - the name of the .vtk file
+% Outputs:
+%   vertices - a Nx3 matrix of vertex coordinates
+%   faces - a Mx3 matrix of indices representing the triangular faces
+
+% Open the file
+fid = fopen(filename, 'r');
+if (fid == -1)
+    error(['Could not open file ', filename]);
+end
+
+% Find the header and read the format
+header = fgetl(fid);
+% if (~strcmp(header, '# vtk DataFile Version 3.0'))
+%     error('Invalid .vtk file format');
+% end
+
+% format = fgetl(fid);
+% if (~strcmp(format, 'ASCII'))
+%     error('Only ASCII format is supported');
+% end
+
+% Find the keyword 'POINTS'
+points = fgetl(fid);
+strs = splitchar(points);
+str_to_compare = strs{1};
+while (~strcmp(str_to_compare, 'POINTS'))
+    points = fgetl(fid);
+    strs = splitchar(points);
+    str_to_compare = strs{1};
+end
+
+% Read the number of vertices and allocate space for them
+nv = sscanf(points, 'POINTS %d double');
+vertices = zeros(nv, 3);
+
+% Read the vertices
+for i = 1:nv
+    line = fgetl(fid);
+    coords = sscanf(line, '%f %f %f');
+    vertices(i, :) = coords';
+end
+
+% Find the keyword 'POLYGONS'
+cells = fgetl(fid);
+strs = splitchar(cells);
+str_to_compare = strs{1};
+while (~strcmp(str_to_compare, 'CELLS'))
+    cells = fgetl(fid);
+    strs = splitchar(cells);
+    str_to_compare = strs{1};
+end
+
+% Read the number of faces and allocate space for them
+nf = sscanf(cells, 'CELLS %d %d');
+ncells = nf(1);
+faces = zeros(ncells, 2);
+
+% Read the faces
+for i = 1:ncells
+    line = fgetl(fid);
+    indices = sscanf(line, '%d %d %d');
+    faces(i, :) = indices(2:indices(1)+1)' + 1; % VTK indices are 0-based, Matlab indices are 1-based
+end
+
+% Close the file
+fclose(fid);
 end
 function [vertices, faces] = read_vtk_file(filename)
 % READ_VTK_FILE reads a .vtk file and returns the vertices and faces.
@@ -123,6 +213,7 @@ end
 % Close the file
 fclose(fid);
 end
+
 
 
 function [points,heds,edges,elements] = buildMesh(vertices,faces)
@@ -230,5 +321,21 @@ for i = 1:n
 end
 if (~isempty(curr))
     strings{end+1} = curr;
+end
+end
+
+function [new_vertices, new_faces] = removeDuplicatePoints(vertices, faces)
+ [new_vertices, ~, old_points_new_ids] = unique(vertices(:,1:3),'rows');
+ new_faces = old_points_new_ids(faces);
+end
+function id = find_id_by_coordinate(vertices, target)
+id = -1;
+min = realmax;
+for i = 1:size(vertices,1)
+    d = norm(vertices(i,:) - target);
+    if (d < min)
+        id = i;
+        min =d ;
+    end
 end
 end

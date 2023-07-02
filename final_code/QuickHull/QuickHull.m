@@ -67,9 +67,11 @@ classdef QuickHull < handle
             %find extremal triangle
             max_dist = -1;
             selected_id = -1;
+            dists = [];
             for i = 1:this.n
                 vi = this.verts(i);
                 dist_i = long_ray.getSquaredDistanceBetweenPoint(vi.coord);
+                dists(end+1) = dist_i;
                 if dist_i > max_dist
                     max_dist = dist_i;
                     selected_id = i;

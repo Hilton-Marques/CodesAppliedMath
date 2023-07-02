@@ -9,33 +9,37 @@ classdef Solver < Drawer
         m_boundary_handles = [];
     end
     methods
-        function this = Solver(horizons, faults)
+        function this = Solver(horizons, faults, data)
             this = this@Drawer();
             
             this.m_horizons = horizons;
             this.m_faults = faults;
             %this.m_faults.initGeodesicPath();
             
-        
+            this.m_faults.showMesh(this.m_red);
             for i = 1:this.m_horizons.m_mesh.m_nboundary_loops
                 boundary_i = this.m_horizons.m_mesh.m_nfaces + i;
                 faces_id = this.m_horizons.m_mesh.getFacesFromBoundary(boundary_i);
-                h = this.m_horizons.showMesh(this.m_blue, faces_id);
+                h = this.m_horizons.showMesh(faces_id,this.m_blue);
                 this.m_boundary_handles = [this.m_boundary_handles, h];
+                this.Extend(5000, i);
             end
 %             this.m_horizon_bb = this.getBB(this.m_horizons.m_geom.m_vertices);
 %             this.setBB(this.m_horizon_bb);
 %%Take 1
-            this.m_horizons.showMesh(this.m_blue);
+            this.m_horizons.showMesh();
             this.m_horizon_bb = this.getBB(this.m_horizons.m_geom.m_vertices);
             this.setBB(this.m_horizon_bb);
+            ids = unique(data(:));
+            h = this.m_horizons.showMesh(ids,this.m_red);
+            this.focusCamera(this.m_horizons,  ids);
 %             for i = 1:90
 %                 this.update();
 %             end
 %             this.save();
             
 %% Take 2
-             this.m_horizons.showBoundaryLoops();
+            % this.m_horizons.showBoundaryLoops();
 %             for i = 1:90
 %                 this.update();
 %             end
@@ -48,6 +52,48 @@ classdef Solver < Drawer
 %% Take 4
             %this.showGeodesicPath()
             this.intersect();
+        end
+        function showNewTriangles()
+            triangle_id = 3;
+            
+        end
+        function Extend(this, fac, boundary_loop_id)
+            boundary_i = this.m_horizons.m_mesh.m_nfaces + boundary_loop_id;
+            % extend vertices
+            first_hed = this.m_horizons.m_mesh.m_fHalfEdgeArr(boundary_i);
+            prev_hed = first_hed;
+
+            prev_vertex = this.m_horizons.m_mesh.m_heVertexArr(prev_hed);
+            prev_vertex_extended = this.m_horizons.extendVertex(prev_vertex, fac);
+            prev_vertex = this.m_horizons.m_geom.inputVertexPosition(prev_vertex);
+            curr_vertex = prev_vertex;
+            
+            next_hed = ManifoldSurfaceMesh.INVALID_IND;            
+            vertices_id = [];            
+            while (next_hed ~= first_hed)
+                next_hed = this.m_horizons.m_mesh.m_heNextArr(prev_hed);
+                curr_vertex = this.m_horizons.m_mesh.m_heVertexArr(next_hed);
+
+                vertices_id = [vertices_id, curr_vertex];
+                
+                %create two new triangles   
+
+                %method one with cotan formula
+                curr_vertex_extended = this.m_horizons.extendVertex(curr_vertex, fac);
+                curr_vertex = this.m_horizons.m_geom.inputVertexPosition(curr_vertex);
+                tri_1 = [prev_vertex; curr_vertex_extended; prev_vertex_extended];
+                tri_2 = [prev_vertex; curr_vertex; curr_vertex_extended];
+                trisurf([1,2,3],tri_1(:,1), tri_1(:,2), tri_1(:,3),'FaceColor',"#fdfd96");
+                trisurf([1,2,3],tri_2(:,1), tri_2(:,2), tri_2(:,3),'FaceColor',"#fdfd96");
+                
+        
+                prev_hed = next_hed;
+
+                prev_vertex_extended = curr_vertex_extended;
+                prev_vertex = curr_vertex;
+
+            end
+            a = 1;
         end
         function intersect(this)
             n_loops = this.m_horizons.m_mesh.m_nboundary_loops;  
@@ -178,6 +224,21 @@ classdef Solver < Drawer
                 end
                 %%show projections
                 %plot
+            end
+        end
+        function [vertices,faces] = extendHorizons(this, fac)
+            vertices = this.m_horizons.m_vertices;
+            faces = this.m_horizons.m_faces;
+            n_verts = size(vertices,2);
+            for i = 1:this.m_horizons.m_mesh.m_nboundary_loops
+                boundary_i = this.m_horizons.m_mesh.m_nfaces + i;
+                faces_id = this.m_horizons.m_mesh.getFacesFromBoundary(boundary_i);
+                h = this.m_horizons.showMesh(faces_id,this.m_blue);
+                this.m_boundary_handles = [this.m_boundary_handles, h];
+                [new_vertices, new_faces] = this.Extend(fac, i,n_verts);
+                n_verts = size(new_vertices,2) + n_verts;
+                vertices = [vertices; new_vertices];
+                faces = [faces; new_faces];
             end
         end
 

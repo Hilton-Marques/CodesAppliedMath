@@ -7,8 +7,20 @@ addpath("../my_libs/Geresim_Scene/");
 addpath("../my_libs/cgeom/");
 
 tests = Tests();
+%vertex_id = 442; with problem
 
-tests.TestExtension();
+vertex_id = 52;
+
+%tests.TestNormal(vertex_id);
+
+%tests.TestNormal(vertex_id);
+vertex_id = 1087;
+tests.TestBoundaryNormal(vertex_id);
+
+boundary_id  = 2;
+tests.TestExtension(boundary_id);
+
+
 
 
 

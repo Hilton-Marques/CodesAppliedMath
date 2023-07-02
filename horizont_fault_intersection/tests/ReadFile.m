@@ -77,6 +77,7 @@ classdef ReadFile < handle
 
             % Close the file
             fclose(fid);
+            %[vertices, faces] = this.removeDuplicatePoints(vertices, faces);
         end
     end
     methods (Static)
@@ -107,6 +108,10 @@ classdef ReadFile < handle
             if (~isempty(curr))
                 strings{end+1} = curr;
             end
+        end
+        function [new_vertices, new_faces] = removeDuplicatePoints(vertices, faces)
+            [new_vertices, ~, old_points_new_ids] = unique(vertices(:,1:3),'rows');
+            new_faces = old_points_new_ids(faces);
         end
     end
 end

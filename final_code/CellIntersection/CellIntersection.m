@@ -24,13 +24,15 @@ classdef CellIntersection < handle
         function volume = compute(this)
             volume = 0.0;
             this.m_drawer.showCells();
+            [err_concave, exact_A,convex_volume] = this.errConcave(this.m_cell_A )
+            [err_concave, exact_B,convex_volume] = this.errConcave(this.m_cell_B )
             this.m_planes_A = this.buildHalfPlanes(this.m_cell_A);
             this.m_planes_B = this.buildHalfPlanes(this.m_cell_B);          
             this.m_convex_A = ConvexCell(this.projCoords(this.m_cell_A,this.m_planes_A));
             this.m_convex_B = ConvexCell(this.projCoords(this.m_cell_B,this.m_planes_B));
             this.m_convex_A.show('red');
             this.m_convex_B.show('blue');
-            this.m_drawer.showConvexApproximation();      
+            %this.m_drawer.showConvexApproximation();      
             [isIntersecting, p, planes] = this.isIntersecting(this.m_cell_A , this.m_cell_B);
             volume_i = this.getIntersectionVolume(planes, p);
             [err_concave, exact,convex_volume] = this.errConcave(this.m_cell_A );
@@ -105,10 +107,12 @@ classdef CellIntersection < handle
             coord_dual = [];
             A = planes(:,1:3);
             b = -planes(:,4);
+            ds = [];
             for i = 1:size(planes,1)
                 n = A(i,1:3);
                 d = b(i);
                 new_d = d - dot(center,n)
+                ds(end+1) = new_d;
                 if (new_d == 0)
                     continue;
                 end
@@ -136,21 +140,24 @@ classdef CellIntersection < handle
             %[~,k2,volume] = QuickHull(dualPoints);
             trisurf(k2,dualPoints(:,1),dualPoints(:,2),dualPoints(:,3),'FaceColor','magenta','EdgeAlpha',1.0);
         end
-    end
-    methods (Static)
-        %geometry utils
-       function planes = buildHalfPlanes(pts)
+        function planes = buildHalfPlanes(this, pts)
             faces = cell(6,1);
             faces(1) = {[ pts(1,:) ; pts(2,:) ; pts(4,:) ; pts(3,:)] };
             faces(2) = {[ pts(5,:) ; pts(7,:) ; pts(8,:) ; pts(6,:)] };
             faces(3) = {[ pts(2,:) ; pts(6,:) ; pts(8,:) ; pts(4,:)] };
             faces(4) = {[ pts(1,:) ; pts(3,:) ; pts(7,:) ; pts(5,:)] };
             faces(5) = {[ pts(1,:) ; pts(5,:) ; pts(6,:) ; pts(2,:)] };
-            faces(6) = {[ pts(3,:) ; pts(4,:) ; pts(7,:) ; pts(7,:)] };
+            faces(6) = {[ pts(3,:) ; pts(4,:) ; pts(8,:) ; pts(7,:)] };
             planes = zeros(6,4);
             for i = 1:6
+%                 if i == 4
+%                     a = 1;
+%                 end
                 face_pts = faces{i};
                 planes(i,:) = CellIntersection.fittingPlane(face_pts);
+%                 if i > 2
+%                 this.m_drawer.showFace(face_pts);
+%                 end
             end
             opp_ids = [2,1,4,3,6,5];
             for i = 1:6
@@ -180,6 +187,10 @@ classdef CellIntersection < handle
                 end
             end
         end
+    end
+    methods (Static)
+        %geometry utils
+
         function planes = buildHalfPlanesTopBottom(pts)
             faces = cell(6,1);
             faces(1) = {[ pts(1,:) ; pts(2,:) ; pts(4,:) ; pts(3,:)] };
@@ -296,6 +307,12 @@ classdef CellIntersection < handle
                 p0 = pts(i,:);
                 p1 = pts(mod(i,4) + 1 , :);
                 p2 = pts(mod(i+1,4) + 1 , :);
+                dot1 = dot((p1 - p0), (p1 -p0));
+                dot2 = dot((p2 - p0), (p2 -p0));
+                dot3 = dot((p2 - p1), (p2 - p1));
+                if (dot1 < 1e-7 || dot2 < 1e-7 || dot3 < 1e-7)
+                    continue;
+                end
                 normal_i = cross(p1-p0,p2-p0);
                 len = norm(normal_i);
                 if len == 0
@@ -323,6 +340,8 @@ classdef CellIntersection < handle
 
             ids_planes = [4,5,3,6,1,2]; % lef front right back top bottom
             planes = planes(ids_planes,:);
+
+            factor = 0.0;
 
             [o,d] = CellIntersection.intersect3D(-planes(6,4)*planes(6,1:3),-planes(5,4)*planes(5,1:3));
             edges_len = zeros(1,4);
@@ -355,8 +374,8 @@ classdef CellIntersection < handle
                 edge = p_i - p_j;
                 len = norm(edge);
                 edge = edge/len;
-                new_coords(i,:) = p_i - edge*1e-2;
-                new_coords(i + 4,:) = p_j + edge*1e-2;
+                new_coords(i,:) = p_i - edge*factor;
+                new_coords(i + 4,:) = p_j + edge*factor;
             end
             %check degenerateFaces
             if count == 2

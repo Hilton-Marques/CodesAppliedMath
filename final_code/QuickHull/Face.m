@@ -60,7 +60,7 @@ classdef Face < handle
         end
         function bool = addPoint(this,v)
             bool = false;
-            d_signed = this.getDistanceFromPoint(v.coord);
+            d_signed = this.getDistanceFromPoint(v.coord)
             d = abs(d_signed);
             u = v.coord - this.pts(1,:);
             u_unit = u/norm(u);

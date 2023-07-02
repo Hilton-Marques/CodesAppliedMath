@@ -40,6 +40,7 @@ classdef GJK < handle
             this.m_tetra_B.append(vB);
             d = -A;
             d = d/norm(d);
+            iter = 0;
             while true
                 d = d/norm(d);
                 vA = this.m_convex_A.supportfcn(d');
@@ -58,6 +59,7 @@ classdef GJK < handle
                     bool = true;
                     break;
                 end
+                iter = iter + 1;
             end
             lam = this.m_tetra_M.getOriginBary();
             p = this.m_tetra_A.getBaryPoint(lam);

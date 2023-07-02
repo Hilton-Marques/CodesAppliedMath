@@ -138,6 +138,9 @@ classdef BBIntersection < handle
             ids = [X(:),Y(:),Z(:)];            
             cells = [];
             for i = 1:length(bins)
+                if (bins(i) == 1116307)
+                    a = 1;
+                end
                 %check bounding box intersection 
                 bb_bin = this.GetBinBB(ids(i,:));
                 if ~this.IsBBIntersecting(bb_bin,bb)
