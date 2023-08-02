@@ -9,7 +9,7 @@ classdef Solver < Drawer
         m_boundary_handles = [];
     end
     methods
-        function this = Solver(horizons, faults, data)
+        function this = Solver(horizons, faults)
             this = this@Drawer();
             
             this.m_horizons = horizons;
@@ -17,12 +17,13 @@ classdef Solver < Drawer
             %this.m_faults.initGeodesicPath();
             
             this.m_faults.showMesh(this.m_red);
+            this.poissonReconstruction(this.m_faults);
             for i = 1:this.m_horizons.m_mesh.m_nboundary_loops
                 boundary_i = this.m_horizons.m_mesh.m_nfaces + i;
                 faces_id = this.m_horizons.m_mesh.getFacesFromBoundary(boundary_i);
                 h = this.m_horizons.showMesh(faces_id,this.m_blue);
                 this.m_boundary_handles = [this.m_boundary_handles, h];
-                this.Extend(5000, i);
+               % this.Extend(5000, i);
             end
 %             this.m_horizon_bb = this.getBB(this.m_horizons.m_geom.m_vertices);
 %             this.setBB(this.m_horizon_bb);
@@ -30,9 +31,9 @@ classdef Solver < Drawer
             this.m_horizons.showMesh();
             this.m_horizon_bb = this.getBB(this.m_horizons.m_geom.m_vertices);
             this.setBB(this.m_horizon_bb);
-            ids = unique(data(:));
-            h = this.m_horizons.showMesh(ids,this.m_red);
-            this.focusCamera(this.m_horizons,  ids);
+            %ids = unique(data(:));
+            %h = this.m_horizons.showMesh(ids,this.m_red);
+            %this.focusCamera(this.m_horizons,  ids);
 %             for i = 1:90
 %                 this.update();
 %             end
@@ -278,7 +279,22 @@ classdef Solver < Drawer
             this.save("take_4",0.25);
             %this.exportFrame("take_4");
         end
-        
+        function poissonReconstruction(this, manifold_surface)
+            points = manifold_surface.m_geom.inputVertexPosition();
+            %faces = delaunay(points(:,1),points(:,2), points(:,3));
+            %trisurf(faces,points(:,1),points(:,2), points(:,3));
+            ptCloud = pointCloud(points);
+            %plot3(points(:,1), points(:,2), points(:,3),'o','markerSize',5)
+            [mesh,depth,perVertexDensity] = pc2surfacemesh(ptCloud,"poisson",4);
+            
+            trisurf(mesh.Faces, mesh.Vertices(:,1), mesh.Vertices(:,2), mesh.Vertices(:,3), 'FaceColor', 'cyan');
+            %pcshow(ptCloud);
+            %surfaceMeshShow(mesh);
+            ptCloud = pcread("teapot.ply");
+            mesh = pc2surfacemesh(ptCloud,"poisson");
+            surfaceMeshShow(mesh)
+            a = 1;
+        end
 
         function focusCamera(this,obj,  vertices_ids, withWalkThrough)
             if nargin == 3

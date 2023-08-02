@@ -7,13 +7,8 @@ addpath("../my_libs/Geresim_Scene/");
 addpath("../my_libs/cgeom/");
 
 [vertices_horizon, faces_horizon] = read_vtk_file("meshes/EMB_COMPLETO_160_145_ts.vtk");
-target = [549567.9960937500, 8448006.4301757812, -11972.710937500000];
-
-id = find_id_by_coordinate(vertices_horizon, target);
-[vertices, edges] = read_segments_vtk_file("meshes/result_segments.vtk");
 %%To do BFS with weights
 %[vertices_horizon, faces_horizon] = read_vtk_file("meshes/result_triangles_extended.vtk");
-target = [530659,8534430,-5480.02];
 %find_id_by_coordinate(vertices_horizon, target);
 %[vertices_horizon, faces_horizon] = removeDuplicatePoints(vertices_horizon, faces_horizon);
 [vertices_fault, faces_fault] = read_vtk_file("meshes/SM_study_FALHA_2_ts_ts.vtk");
@@ -26,12 +21,12 @@ target = [530659,8534430,-5480.02];
 %vtk2obj("meshes/SM_study_FALHA_2_ts_ts.vtk");
 
 horizon = Horizon(vertices_horizon, faces_horizon);
-data = readmatrix("meshes/new_triangles.txt") + 1;
+%data = readmatrix("meshes/new_triangles.txt") + 1;
 %horizon = Horizon(vertices, faces);
 fault = Fault(vertices_fault, faces_fault);
 
 tic
-Solver(horizon,fault,data);
+Solver(horizon,fault);
 
 toc
 keyboard;

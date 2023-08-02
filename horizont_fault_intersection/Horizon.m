@@ -14,7 +14,7 @@ classdef Horizon < handle
             this.m_geom = Geometry(horizon_vertices);
             this.initBoundaryLoops();
             %this.exportPatches([1,5], "patch_1_5.vtk");
-            this.exportPatches([1,5], "patch_1_5.ts");
+            %this.exportPatches([1,5], "patch_1_5.ts");
 
         end
         function new_vertex = extendVertex(this, id, fac)
@@ -225,6 +225,8 @@ classdef Horizon < handle
             vertice_mapping = zeros(max(verts_ids),1);
             vertice_mapping(verts_ids) = 1:size(verts_ids,1);
             triangles = vertice_mapping(mesh);
+
+            
         end
 
     end
