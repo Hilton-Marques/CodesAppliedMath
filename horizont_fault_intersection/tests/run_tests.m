@@ -3,19 +3,27 @@ clear;
 close all;
 
 addpath(genpath("../"));
-addpath("../my_libs/Geresim_Scene/");
-addpath("../my_libs/cgeom/");
+addpath("../..//my_libs/Geresim_Scene/");
+addpath("../../../my_libs/cgeom/");
+addpath(genpath("../../../gptoolbox/"));
 
 tests = Tests();
 %vertex_id = 442; with problem
 
-vertex_id = 52;
-
+%vertex_id = 52;
 %tests.TestNormal(vertex_id);
 
 %tests.TestNormal(vertex_id);
-vertex_id = 1087;
-tests.TestBoundaryNormal(vertex_id);
+% vertex_id = 1087;
+% tests.TestBoundaryNormal(vertex_id);
+eps = 0.001;
+FF_2 = tests.RemoveBadTriangle(eps);
+FF_1 = tests.MyRemoveBadTriangle(eps);
+
+a = 1
+tests.TestRetriangulation();
+boundary_id  = 2;
+tests.TestSDFExtension(boundary_id);
 
 boundary_id  = 2;
 tests.TestExtension(boundary_id);

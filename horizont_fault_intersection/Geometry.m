@@ -7,7 +7,11 @@ classdef Geometry < handle
             this.m_vertices = vertices;
         end
         function coord = inputVertexPosition(this, id)
-            coord = this.m_vertices(id,:);
+            if nargin == 1
+                coord = this.m_vertices;
+            else
+                coord = this.m_vertices(id,:);
+            end
         end
     end
 end
