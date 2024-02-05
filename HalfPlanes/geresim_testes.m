@@ -17,4 +17,4 @@ f = [[0,0,0];...
 
 plane = cgeom_obj.fittingPlane(f);
 
-[k2,dualPoints,volume] = cgeom_obj.findInterior(planes,[0,0,0],true);
+[k2,dualPoints,volume] = cgeom_obj.findInterior(planes,[0,0,0],false);
