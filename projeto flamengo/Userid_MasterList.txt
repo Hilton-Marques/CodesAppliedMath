@@ -1,3 +1,0 @@
-	userid, Password
-Gustavo,Fla
-Paulo,Star

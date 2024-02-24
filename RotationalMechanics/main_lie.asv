@@ -1,0 +1,19 @@
+close all;
+clc;
+clear all;
+
+addpath(genpath("../../my_libs/"));
+J = [2 -1 0; -1 4 0; 0 0 3];
+orientation = SO3;
+orientation.setToIdentity();
+w = 0.2*[1 2 2]';
+dt = 0.05;
+
+for t = 0:dt:10
+    h = Scene.drawAxis(orientation.m_data);
+    wd = -inv(J)*(cross(w,J*w)); % angular acceleration by (3.14)
+    w = w + wd * dt;
+    orientation = orientation + w * dt; % update
+    pause(0.1);
+    
+end

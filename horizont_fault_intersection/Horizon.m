@@ -231,7 +231,7 @@ classdef Horizon < handle
 
     end
     methods(Static)
-        function exportVTK(meshes, filename)
+        function exportTs(meshes, filename)
             % Open the file for writing
             fid = fopen(filename, 'w');
 
@@ -272,7 +272,7 @@ classdef Horizon < handle
             % Close the file
             fclose(fid);
         end
-        function exportTs(meshes, filename)
+        function exportVTK(meshes, filename)
             % Open the file for writing
             fid = fopen(filename, 'w');
 

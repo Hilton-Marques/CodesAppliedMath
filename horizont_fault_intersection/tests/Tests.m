@@ -4,8 +4,8 @@ classdef Tests < handle
         m_blue = [0.2588 0.5216 0.9569];
     end
     methods
-        function this = Tests()
-            file = ReadFile("../meshes/EMB_COMPLETO_160_145_ts.vtk");
+        function this = Tests(filename)
+            file = ReadFile(filename);
             [vertices_horizon, faces_horizon] = file.getMesh;
             this.m_horizon = Horizon(vertices_horizon, faces_horizon);
         end
@@ -31,7 +31,7 @@ classdef Tests < handle
         end
         
         function TestExtension(this, boundary_loop_id)
-            fac = 1000;
+            fac = 10;
             boundary_i = this.m_horizon.m_mesh.m_nfaces + boundary_loop_id;
             faces_id = this.m_horizon.m_mesh.getFacesFromBoundary(boundary_i);
             hold on
@@ -51,7 +51,9 @@ classdef Tests < handle
             edge_prev_extended = prev_vertex_extended;
             
             next_hed = ManifoldSurfaceMesh.INVALID_IND;            
-            vertices_id = [];            
+            vertices_id = [];   
+            count = 0;
+            edge_collect = [];
             while (next_hed ~= first_hed)
                 next_hed = this.m_horizon.m_mesh.m_heNextArr(prev_hed);
                 curr_vertex = this.m_horizon.m_mesh.m_heVertexArr(next_hed);
@@ -73,6 +75,16 @@ classdef Tests < handle
                 normal_2 = (edge_normal_prev + edge_normal_curr);
                 normal_2 = normal_2 / norm(normal_2);
                 edge_curr_extended = curr_vertex + normal_2*fac;
+                p_target = [319028.00195312500,7054574.8247070312,-4781.397949218750];
+                p_target = [318835.97753906250, 7054529.7924804688, -4791.6411132812500];
+
+                if (norm(curr_vertex - p_target) < 1e-3)
+                    a = 1;
+                end
+
+                edge_collect(end + 1, :) = edge_normal_curr;
+
+
                 
 
                 tri_1 = [prev_vertex; edge_curr_extended; edge_prev_extended];
@@ -93,7 +105,10 @@ classdef Tests < handle
                 % method two updates
                 edge_prev_extended = edge_curr_extended;
                 edge_normal_prev = edge_normal_curr;
+
+                count = count + 1;
             end
+            a = 1;
         end
         function TestRetriangulation(this)
             file = ReadFile("../meshes/result_triangles_6.vtk");
@@ -156,7 +171,7 @@ classdef Tests < handle
             drawnow;
         end
         function FF = RemoveBadTriangle(this, eps)
-            file = ReadFile("../meshes/result_triangles.vtk");
+            file = ReadFile("../meshes/result_triangles_0308.vtk");
             [V, F] = file.getMesh;
             [FF] = collapse_small_triangles(V, F, eps);
 %             verts_ids = sort(unique(FF(:)));
@@ -168,16 +183,19 @@ classdef Tests < handle
 %             Horizon.exportTs(mesh, "new_result_2.vtk");
         end
         function FF = MyRemoveBadTriangle(this, eps)
-            file = ReadFile("../meshes/result_triangles_0108.vtk");
+            file = ReadFile("../meshes/result_triangles_0308.vtk");
             [V, F] = file.getMesh;
             [FF] = cgeom.collapse_small_areas(V,F,eps);
-            verts_ids = sort(unique(FF(:)));
-            VV = V(verts_ids, :);
-            vertice_mapping = zeros(max(verts_ids),1);
-            vertice_mapping(verts_ids) = 1:size(verts_ids,1);
-            FF = vertice_mapping(FF);
-            mesh = {struct('vertices', VV, 'faces',FF)};
-            Horizon.exportTs(mesh, "new_result_2.vtk");
+%             verts_ids = sort(unique(FF(:)));
+%             VV = V(verts_ids, :);
+%             vertice_mapping = zeros(max(verts_ids),1);
+%             vertice_mapping(verts_ids) = 1:size(verts_ids,1);
+%             FF = vertice_mapping(FF);
+%             mesh = {struct('vertices', VV, 'faces',FF)};
+%             Horizon.exportTs(mesh, "new_result_2.vtk");
+        end
+        function MeshDecimation(this, filename)
+            cgeom.mesh_decimation(filename);
         end
     end
     methods (Static)

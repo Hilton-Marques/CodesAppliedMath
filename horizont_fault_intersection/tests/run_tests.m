@@ -7,20 +7,32 @@ addpath("../..//my_libs/Geresim_Scene/");
 addpath("../../../my_libs/cgeom/");
 addpath(genpath("../../../gptoolbox/"));
 
-tests = Tests();
-%vertex_id = 442; with problem
 
-%vertex_id = 52;
-%tests.TestNormal(vertex_id);
+filename = "../meshes/EMB_COMPLETO_160_145_ts.vtk";
+filename = "neigh_horizon_complicated.vtk";
+tests = Tests(filename);
+boundary_id  = 1;
+tests.TestExtension(boundary_id);
 
-%tests.TestNormal(vertex_id);
-% vertex_id = 1087;
-% tests.TestBoundaryNormal(vertex_id);
-eps = 0.001;
+%------ Mesh simplification ----- %
+filename = "cube.obj";
+tests.MeshDecimation(filename);
+
+%------- Normal Boundary --------%
+vertex_id = 442; %with problem
+vertex_id = 52;
+tests.TestNormal(vertex_id);
+
+tests.TestNormal(vertex_id);
+vertex_id = 1087;
+tests.TestBoundaryNormal(vertex_id);
+
+%-------- Remove Triangles of small area ----------%
+eps = 0.000015;
 FF_2 = tests.RemoveBadTriangle(eps);
 FF_1 = tests.MyRemoveBadTriangle(eps);
 
-a = 1
+%------ SDF offset -------------%
 tests.TestRetriangulation();
 boundary_id  = 2;
 tests.TestSDFExtension(boundary_id);

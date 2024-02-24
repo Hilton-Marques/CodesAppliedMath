@@ -1,0 +1,13 @@
+classdef Geodesic < Scene
+    properties
+
+    end
+    methods 
+        function this = Geodesic(A,B)
+            this@Scene('geodesic_se2','SE2');
+            v = B - A;
+            res = SE2.geodesic_path(A,v);
+            geodesic
+        end
+    end
+end

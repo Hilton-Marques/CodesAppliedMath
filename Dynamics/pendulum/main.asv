@@ -1,0 +1,10 @@
+clc;
+clear;
+close all;
+
+addpath(genpath("../my_libs/"))
+obj = Pendulum();
+
+%propose some function for theta
+theta_fcn = @(t) t^2;
+theta_fcn = @(t) t^2;
