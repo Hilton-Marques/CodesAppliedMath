@@ -1,0 +1,3 @@
+[submodule "Computational Geometry/AutomaticMesh"]
+    path = Computational Geometry/AutomaticMesh
+		url = https://github.com/Hilton-Marques/AutomaticMesh.git
