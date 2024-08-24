@@ -1,0 +1,19 @@
+clear all;
+close all;
+clc;
+
+addpath(genpath("../../../../../Projetos/RVC3-MATLAB/toolbox"));
+addpath(genpath("../../../../../Projetos/my_libs"));
+
+[TrueMotion,imu] = imudata();
+l = 0.301;    % body length
+w = 0.088;    % body width
+b = 0.05;     % body height
+dt = imu.dt;
+wt = imu.gyro;
+obj = IMU(l,w,b,wt,dt,imu.accel, imu.magno);
+%obj.Solver(true, TrueMotion.orientation);
+%obj.CompareWithExact(TrueMotion.orientation);
+rots = obj.SolverCMF(false, TrueMotion);
+obj.CompareWithExact(rots, TrueMotion.orientation,fi);
+keyboard;
